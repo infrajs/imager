@@ -66,73 +66,74 @@ function infra_imager_browser($agent = false)
 	return $name;
 }
 
-function imager_makeGray($img_path)
+function imager_makeGray($img_path, &$temp = false)
 {
-	return infra_cache(array($img_path), 'imager_makeGray', function ($img_path) {
-		$dirs = infra_dirs();
-		$type = imager_type($img_path);
-		$name = md5($img_path);
-		$output_path = $dirs['cache'].'imager_gray/'.$name.'.'.$type;
+	
+	$dirs = infra_dirs();
 
-		$type_img = exif_imagetype($img_path);
-		$gd = gd_info();
+	$type = imager_type($img_path);
+	$name = md5($img_path);
 
-		if ($type_img == 3 and $gd['PNG Support'] == 1) {
-			$img_png = imagecreatefromPNG($img_path);
-			imagesavealpha($img_png, true);
+	$temp=tmpfile();
+	fwrite($temp, '');
+	$meta=stream_get_meta_data($temp);
+	$output_path=$meta['uri'];
+	
+	$type_img = exif_imagetype($img_path);
+	$gd = gd_info();
 
-			if ($img_png and imagefilter($img_png, IMG_FILTER_GRAYSCALE)) {
-				@unlink($output_path);
-				imagepng($img_png, $output_path);
-			}
-			imagedestroy($img_png);
-		} elseif ($type_img == 2) {
-			$img = imagecreatefromJPEG($img_path);
-			if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
-				@unlink($output_path);
-				imagejpeg($img, $output_path);
-			}
-			imagedestroy($img);
-			/*
-			if(!$color_total = imagecolorstotal($img_jpg)) {
-			$color_total = 256;		          
-			}   	          		          
-			imagetruecolortopalette( $img_jpg, FALSE, $color_total );    
-			
-			for( $c = 0; $c < $color_total; $c++ ) {    
-			 $col = imagecolorsforindex( $img_jpg, $c );		        
-				 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
-			 imagecolorset( $img_jpg, $c, $i, $i, $i );
-			}		    
-			@unlink( $output_path );
-			imagejpeg( $img_jpg, $output_path );
-			imagedestroy( $img_jpg );*/
-		} elseif ($type_img == 1) {
-			$img = imagecreatefromGIF($img_path);
-			if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
-				@unlink($output_path);
-				imagegif($img, $output_path);
-			}
-			imagedestroy($img);
-			/*if(!$color_total = imagecolorstotal( $img_gif )) {
-			$color_total = 256;		          
-			}   
-			imagetruecolortopalette( $img_gif, FALSE, $color_total );    
-			
-			for( $c = 0; $c < $color_total; $c++ ) {    
-			 $col = imagecolorsforindex( $img_gif, $c );		        
-				 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
-			 imagecolorset( $img_gif, $c, $i, $i, $i );
-			}		    
-			@unlink( $output_path );
-			imagegif( $img_gif, $output_path );
-			imagedestroy( $img_gif );*/
-		} else {
-			return $img_path;
+	if ($type_img == 3 and $gd['PNG Support'] == 1) {
+		$img_png = imagecreatefromPNG($img_path);
+		imagesavealpha($img_png, true);
+
+		if ($img_png and imagefilter($img_png, IMG_FILTER_GRAYSCALE)) {
+			imagepng($img_png, $output_path);
 		}
+		imagedestroy($img_png);
+	} elseif ($type_img == 2) {
+		$img = imagecreatefromJPEG($img_path);
+		if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
+			imagejpeg($img, $output_path);
+		}
+		imagedestroy($img);
+		/*
+		if(!$color_total = imagecolorstotal($img_jpg)) {
+		$color_total = 256;		          
+		}   	          		          
+		imagetruecolortopalette( $img_jpg, FALSE, $color_total );    
+		
+		for( $c = 0; $c < $color_total; $c++ ) {    
+		 $col = imagecolorsforindex( $img_jpg, $c );		        
+			 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
+		 imagecolorset( $img_jpg, $c, $i, $i, $i );
+		}		    
+		@unlink( $output_path );
+		imagejpeg( $img_jpg, $output_path );
+		imagedestroy( $img_jpg );*/
+	} elseif ($type_img == 1) {
+		$img = imagecreatefromGIF($img_path);
+		if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
+			imagegif($img, $output_path);
+		}
+		imagedestroy($img);
+		/*if(!$color_total = imagecolorstotal( $img_gif )) {
+		$color_total = 256;		          
+		}   
+		imagetruecolortopalette( $img_gif, FALSE, $color_total );    
+		
+		for( $c = 0; $c < $color_total; $c++ ) {    
+		 $col = imagecolorsforindex( $img_gif, $c );		        
+			 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
+		 imagecolorset( $img_gif, $c, $i, $i, $i );
+		}		    
+		@unlink( $output_path );
+		imagegif( $img_gif, $output_path );
+		imagedestroy( $img_gif );*/
+	} else {
+		return $img_path;
+	}
 
-		return $output_path;
-	}, array($img_path), isset($_GET['re']));
+	return $output_path;
 }
 function imager_getReal($src)
 {
@@ -159,6 +160,7 @@ function imager_getReal($src)
 }
 function imager_prepareSrc($src)
 {
+
 	if (preg_match("/^https{0,1}:\/\//", $src)) {
 		//$src=infra_theme('*imager/noimage.png');
 		$src = imager_remote($src, $hour);
@@ -167,20 +169,29 @@ function imager_prepareSrc($src)
 			//Такое может быть если путь до картинки передан тоже с imager то есть двойной вызов
 			$src = imager_getReal($src);
 		} else {
-			$src = infra_theme($src, true);
+			$src = infra_theme($src);
 		}
 	}
+	
 
 	if ($src && is_dir($src)) {
 		//папка смотрим в ней для src
-		$ar = infra_loadJSON('*pages/list.php?src='.infra_toutf($src).'&e=jpg,gif,png&onlyname=1');
-		//$ar=glob($src.'*.{png,gif,jpg}',GLOB_BRACE);
-		$r = false;
-		if (@$ar[0]) {
-			$src = $src.infra_tofs($ar[0]);
-			$src = infra_theme($src);
-		} else {
+		$list=array();
+		array_map(function ($file) use (&$list) {
+			if ($file{0}=='.') {
+				return;
+			}
+			$fd=infra_nameinfo($file);
+			if (in_array($fd['ext'], array('jpg', 'gif', 'png'))) {
+				$list[]=$file;
+			}
+		}, scandir($src));
+
+		if (empty($list[0])) {
 			$src = false;
+		} else {
+			$src = $src.$list[0];
+			
 		}
 	}
 
@@ -191,7 +202,6 @@ function imager_remote($src, $t)
 	$dirs = infra_dirs();
 	$dir = $dirs['cache'].'imager_remote/';
 
-	@mkdir($dir);
 	$esrc = $dir.infra_tofs(imager_encode($src));
 	$remotecache = infra_theme($esrc);
 	if ($remotecache && !isset($_GET['re'])) {
@@ -210,32 +220,30 @@ function imager_type($src)
 {
 	$src = infra_tofs($src);
 
-	return infra_cache(array($src), 'imager_type', function ($src) {
-		$handle = fopen($src, 'r');
-		$line = fgets($handle, 50);
-		$line2 = fgets($handle, 50);
-		fclose($handle);
-		if (preg_match('/JFIF/', $line)) {
-			return 'jpeg';
-		}
-		if (preg_match('/PNG/', $line)) {
-			return 'png';
-		}
-		if (preg_match('/GIF/', $line)) {
-			return 'gif';
-		}
-		if (preg_match('/Exif/', $line)) {
-			return 'jpeg';
-		}
-		if (preg_match('/Exif/', $line2)) {
-			return 'jpeg';
-		}
-		if (preg_match('/BM/', $line)) {
-			return 'wbmp';
-		}
+	$handle = fopen($src, 'r');
+	$line = fgets($handle, 50);
+	$line2 = fgets($handle, 50);
+	fclose($handle);
+	if (preg_match('/JFIF/', $line)) {
+		return 'jpeg';
+	}
+	if (preg_match('/PNG/', $line)) {
+		return 'png';
+	}
+	if (preg_match('/GIF/', $line)) {
+		return 'gif';
+	}
+	if (preg_match('/Exif/', $line)) {
+		return 'jpeg';
+	}
+	if (preg_match('/Exif/', $line2)) {
+		return 'jpeg';
+	}
+	if (preg_match('/BM/', $line)) {
+		return 'wbmp';
+	}
 
-		return false;
-	}, array($src), isset($_GET['re']));
+	return false;
 }
 function &imager_readInfo($src)
 {
@@ -273,7 +281,7 @@ function &_imager_readInfo($src)
 		}
 	}
 	*/
-
+	if(!is_file($src))return array();
 	$file = file($src);
 	$l = sizeof($file);
 	$metka = preg_replace("/[\n]/", '', $file[$l - 2]);
@@ -411,7 +419,7 @@ function imager_mark($src, $type)
 	}//Проблема прозрачности
 
 	$info = &imager_readInfo($src);
-
+	
 	if (@$info['ignore']) {
 		return;
 	}//В изображении указано что не нужно делать водяной знак на нём
@@ -421,7 +429,7 @@ function imager_mark($src, $type)
 	}//Если нужно повторно наложить водяной знак, для этого нужно удалить все старые знаки
 
 	$water = infra_theme('*imager/mark.png');
-
+	
 	if (!$water) {
 		return;
 	}
@@ -434,7 +442,7 @@ function imager_mark($src, $type)
 		return;
 	}//Защита.. оригинал не найден.. значит старая версия водяной знак есть,
 	//метке water нет. второй знак не нужен
-
+	
 	$fn = 'imagecreatefrom'.$type;
 	$img = $fn($orig);
 
@@ -442,12 +450,14 @@ function imager_mark($src, $type)
 	list($w, $h) = getimagesize($orig);
 	$w = $w * 9 / 10;
 	$h = $h * 9 / 10;
-	$water = imager_scale($water, 'png', $w, $h);
+	
+	$water = imager_scale($water, $w, $h);
 	
 	$temp=tmpfile();
 	fwrite($temp, $water);
 	$meta=stream_get_meta_data($temp);
 	$water = imagecreatefrompng($meta['uri']);
+
 	$img = create_watermark($type, $img, $water, 100);//$img - картинка с водяным знаком
 
 
@@ -561,6 +571,7 @@ function imager_setTransparency($new_iamge, $image_source)
 
 function imager_scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
 {
+
 	$type=imager_type($src);
 	if (!$type || (!$w && !$h)) {
 		return file_get_contents($src);

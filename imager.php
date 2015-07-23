@@ -115,12 +115,10 @@ if (!is_null($ignoremark)) {
 if ($getorig) {
 	infra_admin(true);
 }
+$gray=isset($_GET['gray']);
+$args=array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
 
-$args=array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top);
-$data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $re) use ($isrc) {
-
-	
-
+$data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	$p1 = infra_srcinfo($isrc);//Нужна папка со звёздочкой
 	$p = infra_srcinfo($src);
 
@@ -198,9 +196,8 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 		}
 		imager_writeInfo($src, $info);
 	}
-
 	if ($type && $mark && !$default) {
-	//Это не значит что нужно делать бэкап
+		//Это не значит что нужно делать бэкап
 		imager_mark($src, $type);//Накладываем водяной знак
 	}
 
@@ -252,12 +249,13 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 		}
 	}
 	//$src с водяной меткой если нужно
-	if (isset($_GET['gray'])) {
-		$src = imager_makeGray($src);//новый src уже на серую картинку
+	if ($gray) {
+		$src = imager_makeGray($src, $temp);//новый src уже на серую картинку
 	}
 
 
 	$data = imager_scale($src, $w, $h, $crop, $top);
+
 	if (!$data) {
 		die('Resize Error');
 	}
