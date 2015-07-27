@@ -123,6 +123,7 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 	$p = infra_srcinfo($src);
 
 	if (in_array($p['ext'], array('docx','mht'))) {
+		die("docx, mht TODO");
 		/*
 			Смотрим подключён ли плагин files для того чтобы достать картинку и файла
 		*/
