@@ -8,5 +8,8 @@
     }],
     "autoload": {
         "psr-4": { "itlife\\imager\\": "/" }
-    }
+    },
+    "require": {
+        "itlife/infra":"~1"
+     }
 }
