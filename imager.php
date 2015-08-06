@@ -99,13 +99,6 @@ if (!$src) {
 }
 
 
-if (!infra_admin()) {
-	//Админ может видить запретные картинки, для него не кэшируем
-	header('Cache-control: public');//Заголовок разрешающий сохранение на прокси-серверах
-}
-
-
-
 if ($getorig) {
 	infra_admin(true);
 }
@@ -121,7 +114,6 @@ $args=array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $
 $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	$p1 = infra_srcinfo($isrc);//Нужна папка со звёздочкой
 	$p = infra_srcinfo($src);
-
 	if (in_array($p['ext'], array('docx','mht'))) {
 		die("docx, mht TODO");
 		/*
