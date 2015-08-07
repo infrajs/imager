@@ -1,4 +1,5 @@
 <?php
+
 /*
 Copyright 2008-2011 ITLife, Ltd. Togliatti, Samara Oblast, Russian Federation. http://itlife-studio.ru
 */
@@ -68,17 +69,16 @@ function infra_imager_browser($agent = false)
 
 function imager_makeGray($img_path, &$temp = false)
 {
-	
 	$dirs = infra_dirs();
 
 	$type = imager_type($img_path);
 	$name = md5($img_path);
 
-	$temp=tmpfile();
+	$temp = tmpfile();
 	fwrite($temp, '');
-	$meta=stream_get_meta_data($temp);
-	$output_path=$meta['uri'];
-	
+	$meta = stream_get_meta_data($temp);
+	$output_path = $meta['uri'];
+
 	$type_img = exif_imagetype($img_path);
 	$gd = gd_info();
 
@@ -98,15 +98,15 @@ function imager_makeGray($img_path, &$temp = false)
 		imagedestroy($img);
 		/*
 		if(!$color_total = imagecolorstotal($img_jpg)) {
-		$color_total = 256;		          
-		}   	          		          
-		imagetruecolortopalette( $img_jpg, FALSE, $color_total );    
+		$color_total = 256;				  
+		}   			  				  
+		imagetruecolortopalette( $img_jpg, FALSE, $color_total );	
 		
-		for( $c = 0; $c < $color_total; $c++ ) {    
-		 $col = imagecolorsforindex( $img_jpg, $c );		        
+		for( $c = 0; $c < $color_total; $c++ ) {	
+		 $col = imagecolorsforindex( $img_jpg, $c );				
 			 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
 		 imagecolorset( $img_jpg, $c, $i, $i, $i );
-		}		    
+		}			
 		@unlink( $output_path );
 		imagejpeg( $img_jpg, $output_path );
 		imagedestroy( $img_jpg );*/
@@ -117,15 +117,15 @@ function imager_makeGray($img_path, &$temp = false)
 		}
 		imagedestroy($img);
 		/*if(!$color_total = imagecolorstotal( $img_gif )) {
-		$color_total = 256;		          
+		$color_total = 256;				  
 		}   
-		imagetruecolortopalette( $img_gif, FALSE, $color_total );    
+		imagetruecolortopalette( $img_gif, FALSE, $color_total );	
 		
-		for( $c = 0; $c < $color_total; $c++ ) {    
-		 $col = imagecolorsforindex( $img_gif, $c );		        
+		for( $c = 0; $c < $color_total; $c++ ) {	
+		 $col = imagecolorsforindex( $img_gif, $c );				
 			 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
 		 imagecolorset( $img_gif, $c, $i, $i, $i );
-		}		    
+		}			
 		@unlink( $output_path );
 		imagegif( $img_gif, $output_path );
 		imagedestroy( $img_gif );*/
@@ -160,7 +160,6 @@ function imager_getReal($src)
 }
 function imager_prepareSrc($src)
 {
-
 	if (preg_match("/^https{0,1}:\/\//", $src)) {
 		//$src=infra_theme('*imager/noimage.png');
 		$src = imager_remote($src, $hour);
@@ -172,18 +171,17 @@ function imager_prepareSrc($src)
 			$src = infra_theme($src);
 		}
 	}
-	
 
 	if ($src && is_dir($src)) {
 		//папка смотрим в ней для src
-		$list=array();
+		$list = array();
 		array_map(function ($file) use (&$list) {
-			if ($file{0}=='.') {
+			if ($file{0} == '.') {
 				return;
 			}
-			$fd=infra_nameinfo($file);
+			$fd = infra_nameinfo($file);
 			if (in_array($fd['ext'], array('jpg', 'gif', 'png'))) {
-				$list[]=$file;
+				$list[] = $file;
 			}
 		}, scandir($src));
 
@@ -191,7 +189,6 @@ function imager_prepareSrc($src)
 			$src = false;
 		} else {
 			$src = $src.$list[0];
-			
 		}
 	}
 
@@ -281,7 +278,9 @@ function &_imager_readInfo($src)
 		}
 	}
 	*/
-	if(!is_file($src))return array();
+	if (!is_file($src)) {
+		return array();
+	}
 	$file = file($src);
 	$l = sizeof($file);
 	$metka = preg_replace("/[\n]/", '', $file[$l - 2]);
@@ -419,7 +418,7 @@ function imager_mark($src, $type)
 	}//Проблема прозрачности
 
 	$info = &imager_readInfo($src);
-	
+
 	if (@$info['ignore']) {
 		return;
 	}//В изображении указано что не нужно делать водяной знак на нём
@@ -429,7 +428,7 @@ function imager_mark($src, $type)
 	}//Если нужно повторно наложить водяной знак, для этого нужно удалить все старые знаки
 
 	$water = infra_theme('*imager/mark.png');
-	
+
 	if (!$water) {
 		return;
 	}
@@ -442,7 +441,7 @@ function imager_mark($src, $type)
 		return;
 	}//Защита.. оригинал не найден.. значит старая версия водяной знак есть,
 	//метке water нет. второй знак не нужен
-	
+
 	$fn = 'imagecreatefrom'.$type;
 	$img = $fn($orig);
 
@@ -450,12 +449,12 @@ function imager_mark($src, $type)
 	list($w, $h) = getimagesize($orig);
 	$w = $w * 9 / 10;
 	$h = $h * 9 / 10;
-	
+
 	$water = imager_scale($water, $w, $h);
-	
-	$temp=tmpfile();
+
+	$temp = tmpfile();
 	fwrite($temp, $water);
-	$meta=stream_get_meta_data($temp);
+	$meta = stream_get_meta_data($temp);
 	$water = imagecreatefrompng($meta['uri']);
 
 	$img = create_watermark($type, $img, $water, 100);//$img - картинка с водяным знаком
@@ -475,7 +474,7 @@ function imager_mark($src, $type)
 # given two images, return a blended watermarked image
 function create_watermark($type, $main_img_obj, $watermark_img_obj, $alpha_level = 100)
 {
-	$alpha_level    /= 100;    # convert 0-100 (%) alpha to decimal
+	$alpha_level	/= 100;	# convert 0-100 (%) alpha to decimal
 
 	# calculate our images dimensions
 	$main_img_obj_w = imagesx($main_img_obj);
@@ -537,7 +536,7 @@ function create_watermark($type, $main_img_obj, $watermark_img_obj, $alpha_level
 }
 function _get_ave_color($color_a, $color_b, $alpha_level)
 {
-	return round((($color_a * (1 - $alpha_level)) + ($color_b    * $alpha_level)));
+	return round((($color_a * (1 - $alpha_level)) + ($color_b	* $alpha_level)));
 }
 
 # return closest pallette-color match for RGB values
@@ -571,13 +570,11 @@ function imager_setTransparency($new_iamge, $image_source)
 
 function imager_scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
 {
-
-	$type=imager_type($src);
+	$type = imager_type($src);
 	if (!$type || (!$w && !$h)) {
 		return file_get_contents($src);
 	}
-	
-	
+
 	list($width_orig, $height_orig) = getimagesize($src);
 	if (!$height_orig) {
 		return file_get_contents($src);
@@ -633,7 +630,6 @@ function imager_scale($src, $w, $h, $crop = false, $top = false, $bottom = false
 	$dir = $dir.infra_forFS($src);
 	$src_cache = $dir.'/w'.$w.' x h'.$h.$c.$t.$b.'.'.$type;
 
-
 	$image_p = imagecreatetruecolor($w, $h);
 
 	$fn = 'imagecreatefrom'.$type;
@@ -672,10 +668,10 @@ function imager_scale($src, $w, $h, $crop = false, $top = false, $bottom = false
 	if ($type == 'png') {
 		$quality = 2;
 	}
-	
+
 	ob_start();
 	$fn($image_p, null, $quality);
-	$data=ob_get_contents();
+	$data = ob_get_contents();
 	ob_end_clean();
 	imagedestroy($image);
 	imagedestroy($image_p);

@@ -5,7 +5,6 @@ $dirs = infra_dirs();
 $conf = infra_config();
 
 if ($conf['infra']['cache'] == 'fs') {
-
 	if (!is_dir($dirs['cache'].'imager_remote/')) {
 		mkdir($dirs['cache'].'imager_remote/');
 	}

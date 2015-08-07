@@ -63,9 +63,7 @@ if (!function_exists('runfolder')) {
 }
 $dirs = infra_dirs();
 
-
 $dirorig = $dirs['data'].'imager/.notwater/';
-
 
 $iswater = infra_theme($dirs['data'].'imager/mark.png');
 $ishwater = infra_theme($dirs['data'].'imager/.mark.png');
@@ -89,7 +87,7 @@ if (isset($_GET['action'])) {
 		}
 		if (!isset($_SESSION['imager'])) {
 			//Шаг один
-			$conf=infra_config();
+			$conf = infra_config();
 			$files = runfolder($dir, 1, 0, true, $conf['imager']['images']);
 			//Если на пробежке обламаемся сессия создана не будет и при обновлении продолжим...
 			$_SESSION['imager'] = array();
@@ -171,7 +169,7 @@ $countorig = sizeof($files);
 		Config.imager.watermark: <b>
 <?php
 $conf = infra_config();
-echo ($conf['imager']['watermark'] ? 'true' : 'false');
+echo($conf['imager']['watermark'] ? 'true' : 'false');
 ?></b> - глобальный запрет и создавать или нет папку data/imager/<br>
 		Количество оригиналов иллюстраций с водяным знаком: <b><?php echo $countorig?></b>. 
 		<br><a href="?action=removemarks">Удалить на иллюстрациях водяной знак</a>. <small>Если будет ошибка на ограничение времени выполенния скрипта, нужно обновлять страницу пока скрипт не закончит работу.</small><br>

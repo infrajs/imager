@@ -46,7 +46,6 @@ $h = (int) @$_GET['h'];
 $top = (bool) @$_GET['top'];
 $crop = (bool) @$_GET['crop'];
 
-
 $ignoremark = null;
 if (isset($_GET['ignoremark'])) {
 	$ignoremark = (bool) $_GET['ignoremark'];
@@ -84,9 +83,9 @@ if (isset($_GET['info'])) {
 
 if ($src && (preg_match("/\/\./", $src) || ($src{0} == '.' && $src{1} != '/'))) {
 	header('HTTP/1.1 403 Forbidden');
+
 	return;
 }
-
 
 if (!$src) {
 	$default = true;
@@ -98,13 +97,10 @@ if (!$src) {
 	}
 }
 
-
 if (!infra_admin()) {
 	//Админ может видить запретные картинки, для него не кэшируем
 	header('Cache-control: public');//Заголовок разрешающий сохранение на прокси-серверах
 }
-
-
 
 if ($getorig) {
 	infra_admin(true);
@@ -115,20 +111,20 @@ if (!is_null($ignoremark)) {
 if ($getorig) {
 	infra_admin(true);
 }
-$gray=isset($_GET['gray']);
-$args=array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
+$gray = isset($_GET['gray']);
+$args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
 
-$data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
+$data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	$p1 = infra_srcinfo($isrc);//Нужна папка со звёздочкой
 	$p = infra_srcinfo($src);
 
-	if (in_array($p['ext'], array('docx','mht'))) {
-		die("docx, mht TODO");
+	if (in_array($p['ext'], array('docx', 'mht'))) {
+		die('docx, mht TODO');
 		/*
 			Смотрим подключён ли плагин files для того чтобы достать картинку и файла
 		*/
 		if (!infra_theme('*files/files.inc.php')) {
-			$default=true;
+			$default = true;
 			$src = infra_theme('*imager/noimage.png');
 		} else {
 			infra_require('*files/files.inc.php');
@@ -141,7 +137,7 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 			if ($p['ext'] == 'docx') {
 				$p = files_get(infra_toutf($p1['folder']), infra_toutf($p['id']));
 				if (!$p['images'][0]) {
-					$default=true;
+					$default = true;
 					$src = infra_theme('*imager/noimage.png');
 					//header('HTTP/1.1 404 Not Found');
 					//return;
@@ -151,7 +147,7 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 			} elseif ($p['ext'] == 'mht') {
 				$p = infra_loadJSON('*pages/mht/mht.php?preview'.$re.'&src='.infra_toutf($p['src']));
 				if (!$p['images'][0]) {
-					$default=true;
+					$default = true;
 					$src = infra_theme('*imager/noimage.png');
 					//header('HTTP/1.1 404 Not Found');
 					//return;
@@ -254,7 +250,6 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 		$src = imager_makeGray($src, $temp);//новый src уже на серую картинку
 	}
 
-
 	$data = imager_scale($src, $w, $h, $crop, $top);
 
 	if (!$data) {
@@ -272,10 +267,11 @@ $data=infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark
 	}
 
 	if (!$type) {
-		$type='image/jpeg';
+		$type = 'image/jpeg';
 	}
 
-	$data=array('data'=>$data,'name'=>$name,'type'=>$type);
+	$data = array('data' => $data, 'name' => $name, 'type' => $type);
+
 	return $data;
 }, $args, isset($_GET['re']));
 
