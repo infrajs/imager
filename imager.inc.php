@@ -180,7 +180,8 @@ function imager_prepareSrc($src)
 				return;
 			}
 			$fd = infra_nameinfo($file);
-			if (in_array($fd['ext'], array('jpg', 'gif', 'png'))) {
+			$ext=infra_strtolower($fd['ext']);
+			if (in_array($ext, array('jpg', 'gif', 'png'))) {
 				$list[] = $file;
 			}
 		}, scandir($src));

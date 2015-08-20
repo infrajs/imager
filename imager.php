@@ -118,7 +118,7 @@ $data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 	if (in_array($p['ext'], array('docx','mht'))) {
 		die("docx, mht TODO");
 		/*
-			Смотрим подключён ли плагин files для того чтобы достать картинку и файла
+			TODO: Смотрим подключён ли плагин files для того чтобы достать картинку и файла
 		*/
 		if (!infra_theme('*files/files.inc.php')) {
 			$default = true;
