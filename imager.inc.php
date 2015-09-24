@@ -9,7 +9,7 @@ function infra_imager_browser($agent = false)
 	if (!$agent) {
 		$agent = $_SERVER['HTTP_USER_AGENT'];
 	}
-	$agent = strtolower($agent);
+	$agent = mb_strtolower($agent);
 	$name = infra_once('infra_imager_browser', function ($agent) {
 		if (preg_match('/msie (\d)/', $agent, $matches)) {
 			$name = 'ie ie'.$matches[1];

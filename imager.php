@@ -81,7 +81,7 @@ if (isset($_GET['info'])) {
 	return;
 }
 
-if ($src && (preg_match("/\/\./", $src) || ($src{0} == '.' && $src{1} != '/'))) {
+if ($src && (preg_match("/\/\./", $src) || (mb_substr($src, 0, 1) == '.' && mb_substr($src, 1, 1) != '/'))) {
 	header('HTTP/1.1 403 Forbidden');
 
 	return;
