@@ -136,10 +136,10 @@ if (isset($_GET['action'])) {
 		if (sizeof($files) > 0) {
 			//Если остались не востановленные оригиналы.. делаем их backup
 			$dirs = infra_dirs();
-			if (!is_dir($dirs['backup'])) {
-				mkdir($dirs['backup']); //Режим без записи на жёсткий диск
+			if (!is_dir($dirs['data'])) {
+				mkdir($dirs['data']); //Режим без записи на жёсткий диск
 			}
-			$dirbackup = $dirs['backup'].'imager_orig/';
+			$dirbackup = $dirs['data'].'imager/.backuporig/';
 			$dirbackup .= date('j.d.Y').'_'.time().'/';
 			$r = rename($dirorig, $dirbackup);
 			if (!$r) {

@@ -13,13 +13,11 @@ if ($conf['imager']['watermark']) {
 	if (!is_dir($dirs['data'].'imager/')) {
 		mkdir($dirs['data'].'imager/');
 	}
-	if (!is_dir($dirs['data'].'imager/.notwater//')) {
-		mkdir($dirs['data'].'imager/.notwater//');
+	if (!is_dir($dirs['data'].'imager/.notwater/')) {
+		mkdir($dirs['data'].'imager/.notwater/');
 	}
-	if (!is_dir($dirs['backup'])) {
-		mkdir($dirs['backup']);
-	}
-	if (!is_dir($dirs['backup'].'imager_orig/')) {
-		mkdir($dirs['backup'].'imager_orig/');
+	
+	if (!is_dir($dirs['data'].'imager/.backuporig/')) {
+		mkdir($dirs['data'].'imager/.backuporig/');
 	}
 }

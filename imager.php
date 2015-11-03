@@ -255,7 +255,9 @@ $data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 
 	$br = infra_imager_browser();
 	$name = preg_replace("/(.*\/)*/", '', $isrc);
+	
 	$name = infra_toutf($name);
+	
 	if (!preg_match('/ff/', $br)) {
 		$name = rawurlencode($name);
 	}
