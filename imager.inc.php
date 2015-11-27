@@ -1,5 +1,5 @@
 <?php
-
+use infrajs\once\Once;
 /*
 Copyright 2008-2011 ITLife, Ltd. Togliatti, Samara Oblast, Russian Federation. http://itlife-studio.ru
 */
@@ -10,7 +10,7 @@ function infra_imager_browser($agent = false)
 		$agent = $_SERVER['HTTP_USER_AGENT'];
 	}
 	$agent = mb_strtolower($agent);
-	$name = infra_once('infra_imager_browser', function ($agent) {
+	$name = Once::exec('infra_imager_browser', function ($agent) {
 		if (preg_match('/msie (\d)/', $agent, $matches)) {
 			$name = 'ie ie'.$matches[1];
 		} elseif (preg_match('/opera/', $agent)) {
@@ -245,7 +245,7 @@ function imager_type($src)
 }
 function &imager_readInfo($src)
 {
-	return infra_once('imager_readInfo', '_imager_readInfo', array($src));
+	return Once::exec('imager_readInfo', '_imager_readInfo', array($src));
 }
 function &_imager_readInfo($src)
 {
@@ -357,7 +357,7 @@ function imager_writeinfo($src, $data)
 	$l = sizeof($file);
 	$file[] = "\n".'imager';
 	$file[] = "\n".$json;
-	infra_once('imager_readInfo', $data, array($src));
+	Once::exec('imager_readInfo', $data, array($src));
 
 	return file_put_contents($src, implode('', $file));
 }
