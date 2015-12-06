@@ -4,6 +4,7 @@
 	"license": "GPL3",
 	"require": {
 		"infrajs/ans":"~1",
+		"infrajs/once":"~1",
 		"infrajs/path":"~1",
 		"infrajs/cache":"~1"
 	},
