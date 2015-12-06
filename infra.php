@@ -1,7 +1,6 @@
 <?php
 namespace infrajs\imager;
+use infrajs\infra\Infra;
 
-use infrajs\infra\Config;
-
-$conf=Config::get('mem');
+$conf=Infra::config('mem');
 Imager::$conf=array_merge(Imager::$conf, $conf);
