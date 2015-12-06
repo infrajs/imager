@@ -1,30 +1,14 @@
 <?php
 namespace infrajs\imager;
-use infrajs\imager\Imager;
 use infrajs\ans\Ans;
 use infrajs\path\Path;
 use infrajs\cache\Cache;
 
-if(!is_file('vendor/autoload.php'))chdir('../../../');
+if(!is_file('vendor/autoload.php')) {
+	chdir('../../../');
+}
 require_once('vendor/autoload.php');
 
-
-//theme приводит путь к нормальному виду.. путь относительно корня сайта.
-
-$s=Path::theme('vendor/infrajs/imager/test.jpg');
-if($s)var_dump($s);
-
-die('lkj');
-
-chdir('../../../');
-
-$s=Path::theme('vendor/infrajs/imager/test.jpg');
-if($s)var_dump(is_file($s));
-
-
-
-
-die('aasdf');
 $ans = array();
 
 $isrc = Ans::get('src');
