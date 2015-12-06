@@ -6,8 +6,8 @@
 		"infrajs/ans":"~1",
 		"infrajs/path":"~1",
 		"infrajs/cache":"~1"
-	 },
-	 "autoload": {
-		"psr-4": { "infrajs\\imager\\": "/" }
 	},
+	"autoload": {
+		"psr-4": { "infrajs\\imager\\": "/" }
+	}
 }
