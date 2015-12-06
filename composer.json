@@ -3,6 +3,11 @@
 	"description": "Crop and resize images dynamicly in src",
 	"license": "GPL3",
 	"require": {
-		"infrajs/infra":"~1"
-	 }
+		"infrajs/ans":"~1",
+		"infrajs/fs":"~1",
+		"infrajs/cache":"~1"
+	 },
+	 "autoload": {
+		"psr-4": { "infrajs\\imager\\": "/" }
+	},
 }

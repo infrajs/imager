@@ -1,6 +1,0 @@
-{
-	"imager":{
-		"watermark":false,
-		"images":["jpeg", "jpg", "png","gif"]
-	}
-}

@@ -1,0 +1,8 @@
+{
+	"imager":{
+		"require":"*imager/infra.php",
+		"remotecachehour":4,
+		"watermark":false,
+		"waterlim": 22500
+	}
+}

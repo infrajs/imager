@@ -1,14 +1,351 @@
 <?php
+namespace infrajs\imager;
 use infrajs\once\Once;
-/*
-Copyright 2008-2011 ITLife, Ltd. Togliatti, Samara Oblast, Russian Federation. http://itlife-studio.ru
-*/
+use infrajs\path\Path;
+
+class Imager {
+	public static $conf = array();
+	public static $exts = array("jpeg", "jpg", "png", "gif");
+	public static function modified($src) { 
+		$conf=static::$conf;
+		/*---------$src---------------*/
+		if (preg_match('/\.php$/', $src)) return;
+		if (preg_match('/\.php\?/', $src)) return;
+		//Определяем заголовок Last-Modified
+		//Нельзя считывать напрямую такое
+		$tsrc = Path::theme($src);
+		if (!$tsrc) return;
+		$date = filemtime($tsrc);//даже если это папка
+		$last_modified = gmdate('D, d M Y H:i:s', $date).' GMT';
+		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
+			// разобрать заголовок
+			$if_modified_since = preg_replace('/;.*$/', '', $_SERVER['HTTP_IF_MODIFIED_SINCE']);
+
+			if ($if_modified_since == $last_modified) {
+				// кэш браузера до сих пор актуален
+				header('HTTP/1.0 304 Not Modified');
+				//header('Cache-Control: max-age=8640000, must-revalidate');
+				exit;
+			}
+		}
+		//header('Cache-Control: max-age=86400, must-revalidate');
+		header('Last-Modified: '.$last_modified);
+	}
+	
+	public static function prepareSrc($src)
+	{
+		$conf=static::$conf;
+		$ext=Path::getExt($src);
+		if (preg_match("/^https{0,1}:\/\//", $src)) {
+			//$src=Path::theme('*imager/noimage.png');
+			$src = Imager::remote($src);
+		} else {
+			if ($ext=='php') {
+				//Такое может быть если путь до картинки передан тоже с imager то есть двойной вызов
+				$src = Imager::getReal($src);
+			} else {
+				$src = Path::theme($src);
+			}
+		}
+		if ($src && is_dir($src)) {
+			//папка смотрим в ней для src
+			$list = array();
+			array_map(function ($file) use (&$list) {
+				if ($file{0} == '.') return;
+				if (in_array($ext, static::$exts)) $list[] = $file;
+			}, scandir($src));
+
+			if (empty($list[0])) {
+				$src = false;
+			} else {
+				$src = $src.$list[0];
+			}
+		}
+		return $src;
+	}
+	
+	public static function remote($src)
+	{
+		$conf=static::$conf;
+		$t=$conf['remotecachehour'];
+		$dir = $conf['cache'].'remote/';
+		$dir = Path::theme($dir);
+		if (!$dir) die('Not Found '.$conf['cache'].'remote/');
+
+		$esrc = $dir.Path::encode($src);
+		$remotecache = Path::theme($esrc);
+		if ($remotecache && !isset($_GET['re'])) {
+			$cachetime = filemtime($remotecache);
+			$now = time();
+			if ($now - ($t * 60 * 60) < $cachetime) {
+				return $esrc;
+			}
+		}
+		$filecontent = file_get_contents($src);
+		file_put_contents($esrc, $filecontent);
+
+		return $esrc;
+	}
+	public static function noImage(){
+		$conf=static::$conf;
+		return Path::theme('vendor/infrajs/imager/noimage.png');
+	}
+	public static function getReal($src)
+	{
+		//php
+		$conf=static::$conf;
+		$p = explode('?', $src, 2);
+		$path = $p[0];
+		$query = $p[1];
+		if (!$query) {
+			return Path::theme($src);
+		}
+		if (!$path) {
+			return static::getReal($query);
+		} elseif (preg_match("/imager\/p$/", $path)) {
+			$p = explode('&', $query);
+			$obj = array();
+			for ($i = 0, $l = sizeof($p); $i < $l; ++$i) {
+				$b = explode('=', $p[$i], 2);
+				$obj[$b[0]] = $b[1];
+			}
+			$src=$obj['src'];
+			$ext=Path::getExt($src);
+			if ($ext=='php') {
+				return static::getReal($obj['src']);
+			} else {
+				return Path::theme($src);
+			}
+		}
+	}
+
+	public static function toutf($src) {
+		return $src;
+	}
+	public static function tofs($src) {
+		return $src;
+	}
+	public static function getType($src)
+	{
+		$src = static::tofs($src);
+
+		$handle = fopen($src, 'r');
+		$line = fgets($handle, 50);
+		$line2 = fgets($handle, 50);
+		fclose($handle);
+		if (preg_match('/JFIF/', $line)) {
+			return 'jpeg';
+		}
+		if (preg_match('/PNG/', $line)) {
+			return 'png';
+		}
+		if (preg_match('/GIF/', $line)) {
+			return 'gif';
+		}
+		if (preg_match('/Exif/', $line)) {
+			return 'jpeg';
+		}
+		if (preg_match('/Exif/', $line2)) {
+			return 'jpeg';
+		}
+		if (preg_match('/BM/', $line)) {
+			return 'wbmp';
+		}
+
+		return false;
+	}
+	public static function makeGray($img_path, &$temp = false)
+	{
+		$type = static::getType($img_path);
+		$name = md5($img_path);
+
+		$temp = tmpfile();
+		fwrite($temp, '');
+		$meta = stream_get_meta_data($temp);
+		$output_path = $meta['uri'];
+
+		$type_img = exif_imagetype($img_path);
+		$gd = gd_info();
+
+		if ($type_img == 3 and $gd['PNG Support'] == 1) {
+			$img_png = imagecreatefromPNG($img_path);
+			imagesavealpha($img_png, true);
+
+			if ($img_png and imagefilter($img_png, IMG_FILTER_GRAYSCALE)) {
+				imagepng($img_png, $output_path);
+			}
+			imagedestroy($img_png);
+		} elseif ($type_img == 2) {
+			$img = imagecreatefromJPEG($img_path);
+			if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
+				imagejpeg($img, $output_path);
+			}
+			imagedestroy($img);
+			/*
+			if(!$color_total = imagecolorstotal($img_jpg)) {
+			$color_total = 256;				  
+			}   			  				  
+			imagetruecolortopalette( $img_jpg, FALSE, $color_total );	
+			
+			for( $c = 0; $c < $color_total; $c++ ) {	
+			 $col = imagecolorsforindex( $img_jpg, $c );				
+				 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
+			 imagecolorset( $img_jpg, $c, $i, $i, $i );
+			}			
+			@unlink( $output_path );
+			imagejpeg( $img_jpg, $output_path );
+			imagedestroy( $img_jpg );*/
+		} elseif ($type_img == 1) {
+			$img = imagecreatefromGIF($img_path);
+			if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
+				imagegif($img, $output_path);
+			}
+			imagedestroy($img);
+			/*if(!$color_total = imagecolorstotal( $img_gif )) {
+			$color_total = 256;				  
+			}   
+			imagetruecolortopalette( $img_gif, FALSE, $color_total );	
+			
+			for( $c = 0; $c < $color_total; $c++ ) {	
+			 $col = imagecolorsforindex( $img_gif, $c );				
+				 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
+			 imagecolorset( $img_gif, $c, $i, $i, $i );
+			}			
+			@unlink( $output_path );
+			imagegif( $img_gif, $output_path );
+			imagedestroy( $img_gif );*/
+		} else {
+			return $img_path;
+		}
+
+		return $output_path;
+	}
+	public static function scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
+	{
+		
+		$type = static::getType($src);
+		if (!$type || (!$w && !$h)) {
+			return file_get_contents($src);
+		}
+
+		list($width_orig, $height_orig) = getimagesize($src);
+		if (!$height_orig) {
+			return file_get_contents($src);
+		}
+
+		//Размер который делаем не должен быть больше оригинального
+		//На случай если требуемый размер слишком большой оставляем оригинальный
+		if (($w && $width_orig < $w) || !$w) {
+			$w = $width_orig;
+		}
+		if (($h && $height_orig < $h) || !$h) {
+			$h = $height_orig;
+		}
+		$dh = 0;
+		$dw = 0;
+		if ($w && $h) {
+			$k = $w / $h;
+			$k_orig = $width_orig / $height_orig;
+			if ($k_orig == $k) {//Не важно.. что уменьшаем пропорции останутся одинаковыми
+			} elseif ($k_orig > $k) {
+				//ширины в оригинале больше чем в требуемом.. с учётом размеров высоты.
+				if (!$crop) {
+					//Значит чтобы ничего не обрезать и быть в рамках меняем ширину а высота и так относительно меньше требуемой
+					$h = false;//Значит высоту нужно высчитать отностительно ширины
+				} else {
+					//Ну а если нужно чтобы указанные размеры были полностью заполнены то ширину надо обрезать и равняться будем уже на высоту
+					$d = $h / $height_orig;//Коэфициент на сколько изменяем оригинальный размер
+					$dw = (($width_orig * $d - $w)) / $d;
+				}
+			} else {
+				if (!$crop) {
+					//Значит меняем ширину а высота и так относительно меньше требуемой
+					$w = false;
+				} else {
+					//Ну а если обрезать, то высоту/ Ровняемся на ширину
+					$d = $w / $width_orig;//Коэфициент на сколько изменяем оригинальный размер
+					$dh = (($height_orig * $d - $h)) / $d;
+				}
+			}
+		}
+
+		if (!$w) {
+			$w = ($h / $height_orig) * $width_orig;
+		}
+		if (!$h) {
+			$h = ($w / $width_orig) * $height_orig;
+		}
+		$c = ($crop && ($dh || $dw)) ? ' crop' : '';
+		$t = ($top && $c) ? ' top' : '';
+		$b = ($bottom && $c) ? ' bottom' : '';
+		
+		$conf=static::$conf;
+
+		$image_p = imagecreatetruecolor($w, $h);
+
+		$fn = 'imagecreatefrom'.$type;
+		$image = $fn($src);
+
+		//image_p пустая картинка но нужных размеров
+		//image забрали нужную картинку которую нужно превратить в image_p
+		//echo '<br>w '.$w;echo '<br>width_orig '.$width_orig;echo '<br>k '.$k;echo '<br>k_orig '.$k_orig;echo '<br>d '.$d;echo '<br>dw '.$dw;echo '<br>dh '.$dh;exit;
+		if ($type == 'png') {
+			imagealphablending($image_p, false);
+			imagesavealpha($image_p, true);
+		}
+		if ($type == 'gif') {
+			$colorcount = imagecolorstotal($image);
+			imagetruecolortopalette($image_p, true, $colorcount);
+			imagepalettecopy($image_p, $image);
+			$transparentcolor = imagecolortransparent($image);
+			if ($transparentcolor == -1) {
+				$transparentcolor = 255;
+			}
+			imagefill($image_p, 0, 0, $transparentcolor);
+			imagecolortransparent($image_p, $transparentcolor);
+		}
+		//if($crop&&$top)$dh=0;
+		if ($top) {
+			$fromtop = 0;
+		} elseif ($bottom) {
+			$fromtop = $dh;
+		} else {
+			$fromtop = $dh / 2;
+		}
+
+		imagecopyresampled($image_p, $image, 0, 0, $dw / 2, $fromtop, $w, $h, $width_orig - $dw, $height_orig - $dh);
+		$fn = 'image'.$type;
+		$quality = 90;
+		if ($type == 'png') {
+			$quality = 2;
+		}
+
+		ob_start();
+		$fn($image_p, null, $quality);
+		$data = ob_get_contents();
+		ob_end_clean();
+		imagedestroy($image);
+		imagedestroy($image_p);
+
+		return $data;
+	}
+}
+Imager::$conf = array(
+	"cache" => Path::$conf['cache'].'imager/',
+	"remotecachehour" => 4,
+	"watermark" => false,
+	'waterlim' => 22500
+);
+
+
+
+
+
 
 function infra_imager_browser($agent = false)
 {
-	if (!$agent) {
-		$agent = $_SERVER['HTTP_USER_AGENT'];
-	}
+	if (!$agent) $agent = $_SERVER['HTTP_USER_AGENT'];
+
 	$agent = mb_strtolower($agent);
 	$name = Once::exec('infra_imager_browser', function ($agent) {
 		if (preg_match('/msie (\d)/', $agent, $matches)) {
@@ -67,182 +404,33 @@ function infra_imager_browser($agent = false)
 	return $name;
 }
 
-function imager_makeGray($img_path, &$temp = false)
-{
-	$dirs = infra_dirs();
 
-	$type = imager_type($img_path);
-	$name = md5($img_path);
 
-	$temp = tmpfile();
-	fwrite($temp, '');
-	$meta = stream_get_meta_data($temp);
-	$output_path = $meta['uri'];
 
-	$type_img = exif_imagetype($img_path);
-	$gd = gd_info();
 
-	if ($type_img == 3 and $gd['PNG Support'] == 1) {
-		$img_png = imagecreatefromPNG($img_path);
-		imagesavealpha($img_png, true);
 
-		if ($img_png and imagefilter($img_png, IMG_FILTER_GRAYSCALE)) {
-			imagepng($img_png, $output_path);
-		}
-		imagedestroy($img_png);
-	} elseif ($type_img == 2) {
-		$img = imagecreatefromJPEG($img_path);
-		if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
-			imagejpeg($img, $output_path);
-		}
-		imagedestroy($img);
-		/*
-		if(!$color_total = imagecolorstotal($img_jpg)) {
-		$color_total = 256;				  
-		}   			  				  
-		imagetruecolortopalette( $img_jpg, FALSE, $color_total );	
-		
-		for( $c = 0; $c < $color_total; $c++ ) {	
-		 $col = imagecolorsforindex( $img_jpg, $c );				
-			 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
-		 imagecolorset( $img_jpg, $c, $i, $i, $i );
-		}			
-		@unlink( $output_path );
-		imagejpeg( $img_jpg, $output_path );
-		imagedestroy( $img_jpg );*/
-	} elseif ($type_img == 1) {
-		$img = imagecreatefromGIF($img_path);
-		if ($img and imagefilter($img, IMG_FILTER_GRAYSCALE)) {
-			imagegif($img, $output_path);
-		}
-		imagedestroy($img);
-		/*if(!$color_total = imagecolorstotal( $img_gif )) {
-		$color_total = 256;				  
-		}   
-		imagetruecolortopalette( $img_gif, FALSE, $color_total );	
-		
-		for( $c = 0; $c < $color_total; $c++ ) {	
-		 $col = imagecolorsforindex( $img_gif, $c );				
-			 $i   = ( $col['red']+$col['green']+$col['blue'] )/3;
-		 imagecolorset( $img_gif, $c, $i, $i, $i );
-		}			
-		@unlink( $output_path );
-		imagegif( $img_gif, $output_path );
-		imagedestroy( $img_gif );*/
-	} else {
-		return $img_path;
-	}
 
-	return $output_path;
-}
-function imager_getReal($src)
-{
-	$p = explode('?', $src, 2);
-	$path = $p[0];
-	$query = $p[1];
-	if (!$query) {
-		return infra_theme($path, 'fn');
-	}
-	if (preg_match("/theme\.php$/", $path)) {
-		return imager_getReal($query);
-	} elseif (preg_match("/imager\.php$/", $path)) {
-		$p = explode('&', $query);
-		$obj = array();
-		for ($i = 0, $l = sizeof($p); $i < $l; ++$i) {
-			$b = explode('=', $p[$i], 2);
-			$obj[$b[0]] = $b[1];
-		}
 
-		return imager_getReal($obj['src']);
-	}
 
-	return false;
-}
-function imager_prepareSrc($src)
-{
-	if (preg_match("/^https{0,1}:\/\//", $src)) {
-		//$src=infra_theme('*imager/noimage.png');
-		$src = imager_remote($src, $hour);
-	} else {
-		if (preg_match("/\.php/", $src)) {
-			//Такое может быть если путь до картинки передан тоже с imager то есть двойной вызов
-			$src = imager_getReal($src);
-		} else {
-			$src = infra_theme($src);
-		}
-	}
 
-	if ($src && is_dir($src)) {
-		//папка смотрим в ней для src
-		$list = array();
-		array_map(function ($file) use (&$list) {
-			if ($file{0} == '.') {
-				return;
-			}
-			$fd = infra_nameinfo($file);
-			$ext=infra_strtolower($fd['ext']);
-			if (in_array($ext, array('jpg', 'gif', 'png'))) {
-				$list[] = $file;
-			}
-		}, scandir($src));
 
-		if (empty($list[0])) {
-			$src = false;
-		} else {
-			$src = $src.$list[0];
-		}
-	}
 
-	return $src;
-}
-function imager_remote($src, $t)
-{
-	$dirs = infra_dirs();
-	$dir = $dirs['cache'].'imager_remote/';
 
-	$esrc = $dir.infra_tofs(imager_encode($src));
-	$remotecache = infra_theme($esrc);
-	if ($remotecache && !isset($_GET['re'])) {
-		$cachetime = filemtime($remotecache);
-		$now = time();
-		if ($now - ($t * 60 * 60) < $cachetime) {
-			return $esrc;
-		}
-	}
-	$filecontent = file_get_contents($src);
-	file_put_contents($esrc, $filecontent);
 
-	return $esrc;
-}
-function imager_type($src)
-{
-	$src = infra_tofs($src);
 
-	$handle = fopen($src, 'r');
-	$line = fgets($handle, 50);
-	$line2 = fgets($handle, 50);
-	fclose($handle);
-	if (preg_match('/JFIF/', $line)) {
-		return 'jpeg';
-	}
-	if (preg_match('/PNG/', $line)) {
-		return 'png';
-	}
-	if (preg_match('/GIF/', $line)) {
-		return 'gif';
-	}
-	if (preg_match('/Exif/', $line)) {
-		return 'jpeg';
-	}
-	if (preg_match('/Exif/', $line2)) {
-		return 'jpeg';
-	}
-	if (preg_match('/BM/', $line)) {
-		return 'wbmp';
-	}
 
-	return false;
-}
+
+
+
+
+
+
+
+
+
+
+
+
 function &imager_readInfo($src)
 {
 	return Once::exec('imager_readInfo', '_imager_readInfo', array($src));
@@ -362,16 +550,7 @@ function imager_writeinfo($src, $data)
 	return file_put_contents($src, implode('', $file));
 }
 
-function imager_encode($file)
-{
-	//Передаётся имя со слэшами надо сделать имя файла и путь до него
-	$file = preg_replace('/[\/:]/', ',', $file);//Если в имени файла уже есть запятая не получится сделать водяной знак
-	if (mb_strlen($file) > 50) {
-		$file = md5($file);
-	}
 
-	return $file;
-}
 function &imager_makeInfo($src)
 {
 	$info = imager_readInfo($src);
@@ -386,7 +565,7 @@ function &imager_makeInfo($src)
 	@mkdir($dir);
 
 	$i = '';
-	$orig = $dir.infra_forFS($src);
+	$orig = $dir.Path::encode($src);
 	while (is_file($orig)) {
 		$orig = $orig.$i;
 		$i .= 'i';
@@ -403,7 +582,7 @@ function &imager_makeInfo($src)
 
 	return $info;
 }
-function imager_mark($src, $type)
+/*function imager_mark($src, $type)
 {
 	$conf = infra_config();
 	if (!$conf['imager']['watermark']) {
@@ -428,7 +607,7 @@ function imager_mark($src, $type)
 		return;
 	}//Если нужно повторно наложить водяной знак, для этого нужно удалить все старые знаки
 
-	$water = infra_theme('*imager/mark.png');
+	$water = Path::theme('*imager/mark.png');
 
 	if (!$water) {
 		return;
@@ -438,7 +617,7 @@ function imager_mark($src, $type)
 
 	if (!$orig) {
 		$orig = $src;
-	} elseif (!infra_theme($orig)) {
+	} elseif (!Path::theme($orig)) {
 		return;
 	}//Защита.. оригинал не найден.. значит старая версия водяной знак есть,
 	//метке water нет. второй знак не нужен
@@ -446,7 +625,7 @@ function imager_mark($src, $type)
 	$fn = 'imagecreatefrom'.$type;
 	$img = $fn($orig);
 
-	$orig = infra_theme($orig);
+	$orig = Path::theme($orig);
 	list($w, $h) = getimagesize($orig);
 	$w = $w * 9 / 10;
 	$h = $h * 9 / 10;
@@ -569,113 +748,5 @@ function imager_setTransparency($new_iamge, $image_source)
 	imagecolortransparent($new_image, $transparencyIndex);
 }
 
-function imager_scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
-{
-	$type = imager_type($src);
-	if (!$type || (!$w && !$h)) {
-		return file_get_contents($src);
-	}
 
-	list($width_orig, $height_orig) = getimagesize($src);
-	if (!$height_orig) {
-		return file_get_contents($src);
-	}
-
-	//Размер который делаем не должен быть больше оригинального
-	//На случай если требуемый размер слишком большой оставляем оригинальный
-	if (($w && $width_orig < $w) || !$w) {
-		$w = $width_orig;
-	}
-	if (($h && $height_orig < $h) || !$h) {
-		$h = $height_orig;
-	}
-	$dh = 0;
-	$dw = 0;
-	if ($w && $h) {
-		$k = $w / $h;
-		$k_orig = $width_orig / $height_orig;
-		if ($k_orig == $k) {//Не важно.. что уменьшаем пропорции останутся одинаковыми
-		} elseif ($k_orig > $k) {
-			//ширины в оригинале больше чем в требуемом.. с учётом размеров высоты.
-			if (!$crop) {
-				//Значит чтобы ничего не обрезать и быть в рамках меняем ширину а высота и так относительно меньше требуемой
-				$h = false;//Значит высоту нужно высчитать отностительно ширины
-			} else {
-				//Ну а если нужно чтобы указанные размеры были полностью заполнены то ширину надо обрезать и равняться будем уже на высоту
-				$d = $h / $height_orig;//Коэфициент на сколько изменяем оригинальный размер
-				$dw = (($width_orig * $d - $w)) / $d;
-			}
-		} else {
-			if (!$crop) {
-				//Значит меняем ширину а высота и так относительно меньше требуемой
-				$w = false;
-			} else {
-				//Ну а если обрезать, то высоту/ Ровняемся на ширину
-				$d = $w / $width_orig;//Коэфициент на сколько изменяем оригинальный размер
-				$dh = (($height_orig * $d - $h)) / $d;
-			}
-		}
-	}
-
-	if (!$w) {
-		$w = ($h / $height_orig) * $width_orig;
-	}
-	if (!$h) {
-		$h = ($w / $width_orig) * $height_orig;
-	}
-	$c = ($crop && ($dh || $dw)) ? ' crop' : '';
-	$t = ($top && $c) ? ' top' : '';
-	$b = ($bottom && $c) ? ' bottom' : '';
-
-	$dir = 'imager_resize/';
-	$dir = $dir.infra_forFS($src);
-	$src_cache = $dir.'/w'.$w.' x h'.$h.$c.$t.$b.'.'.$type;
-
-	$image_p = imagecreatetruecolor($w, $h);
-
-	$fn = 'imagecreatefrom'.$type;
-	$image = $fn($src);
-
-	//image_p пустая картинка но нужных размеров
-	//image забрали нужную картинку которую нужно превратить в image_p
-	//echo '<br>w '.$w;echo '<br>width_orig '.$width_orig;echo '<br>k '.$k;echo '<br>k_orig '.$k_orig;echo '<br>d '.$d;echo '<br>dw '.$dw;echo '<br>dh '.$dh;exit;
-	if ($type == 'png') {
-		imagealphablending($image_p, false);
-		imagesavealpha($image_p, true);
-	}
-	if ($type == 'gif') {
-		$colorcount = imagecolorstotal($image);
-		imagetruecolortopalette($image_p, true, $colorcount);
-		imagepalettecopy($image_p, $image);
-		$transparentcolor = imagecolortransparent($image);
-		if ($transparentcolor == -1) {
-			$transparentcolor = 255;
-		}
-		imagefill($image_p, 0, 0, $transparentcolor);
-		imagecolortransparent($image_p, $transparentcolor);
-	}
-	//if($crop&&$top)$dh=0;
-	if ($top) {
-		$fromtop = 0;
-	} elseif ($bottom) {
-		$fromtop = $dh;
-	} else {
-		$fromtop = $dh / 2;
-	}
-
-	imagecopyresampled($image_p, $image, 0, 0, $dw / 2, $fromtop, $w, $h, $width_orig - $dw, $height_orig - $dh);
-	$fn = 'image'.$type;
-	$quality = 90;
-	if ($type == 'png') {
-		$quality = 2;
-	}
-
-	ob_start();
-	$fn($image_p, null, $quality);
-	$data = ob_get_contents();
-	ob_end_clean();
-	imagedestroy($image);
-	imagedestroy($image_p);
-
-	return $data;
-}
+*/

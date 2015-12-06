@@ -1,73 +1,61 @@
 <?php
+namespace infrajs\imager;
+use infrajs\imager\Imager;
+use infrajs\ans\Ans;
+use infrajs\path\Path;
+use infrajs\cache\Cache;
 
-/*
-Copyright 2008-2011 ITLife, Ltd. Togliatti, Samara Oblast, Russian Federation. http://itlife-studio.ru
-
-getorig
-ignoremark
-*/
-
-infra_require('*imager/imager.inc.php');
-
-$src = (string) infra_toutf(@$_GET['src']);
-$or = (string) infra_toutf(@$_GET['or']);//Путь на случай если src не найден
-$isrc = $src;
-$mark = (bool) @$_GET['mark'];
-if (!$mark) {
-	$mark = (bool) @$_GET['m'];
-}//Для совместимости со старой версией depricated
+if(!is_file('vendor/autoload.php'))chdir('../../../');
+require_once('vendor/autoload.php');
 
 
-/*---------$src---------------*/
-if (!preg_match('/\.php/', $isrc)) {
-	//Нельзя считывать напрямую такое
-	$tsrc = infra_theme($isrc);
-	$date = filemtime($tsrc);//даже если это папка
-	$last_modified = gmdate('D, d M Y H:i:s', $date).' GMT';
-	if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
-		// разобрать заголовок
-		$if_modified_since = preg_replace('/;.*$/', '', $_SERVER['HTTP_IF_MODIFIED_SINCE']);
+//theme приводит путь к нормальному виду.. путь относительно корня сайта.
 
-		if ($if_modified_since == $last_modified) {
-			// кэш браузера до сих пор актуален
-			header('HTTP/1.0 304 Not Modified');
-			//header('Cache-Control: max-age=8640000, must-revalidate');
-			exit;
-		}
-	}
-	//header('Cache-Control: max-age=86400, must-revalidate');
-	header('Last-Modified: '.$last_modified);
-}
-/*------------------------*/
+$s=Path::theme('vendor/infrajs/imager/test.jpg');
+if($s)var_dump($s);
 
-$w = (int) @$_GET['w'];
-$h = (int) @$_GET['h'];
+die('lkj');
 
-$top = (bool) @$_GET['top'];
-$crop = (bool) @$_GET['crop'];
+chdir('../../../');
 
-$ignoremark = null;
-if (isset($_GET['ignoremark'])) {
-	$ignoremark = (bool) $_GET['ignoremark'];
-}
+$s=Path::theme('vendor/infrajs/imager/test.jpg');
+if($s)var_dump(is_file($s));
 
-$getorig = (bool) @$_GET['getorig'];//Показывает оригинальную картинку без изменения размеров, как есть... без водяного знака
-//$_GET['ignoremark'];//1 - Навсегда убирает водяной знак с картинки и больше водяной знак добавляться на неё не будет. 0 отменяет этот запрет.
 
-$conf = infra_config();
 
-if (!$conf['imager']) {
-	$conf['imager'] = array('waterlim' => 22500);
-}
+
+die('aasdf');
+$ans = array();
+
+$isrc = Ans::get('src');
+if (!$isrc) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
+
+$src = Imager::prepareSrc($isrc);
+$or = Ans::get('or'); //Путь на случай если src не найден
+
+if (!$src && $or) $src = Imager::prepareSrc($or); //Путь не найден смотрим or
+
+Imager::modified($src);
+
+
+$mark = Ans::get('mark','bool');
+$w = Ans::get('w', 'int');
+$h = Ans::get('h', 'int');
+$top = Ans::get('top','bool');
+$crop = Ans::get('crop','bool');
+$ignoremark = Ans::get('ignoremark','bool', null); //1 - Навсегда убирает водяной знак с картинки и больше водяной знак добавляться на неё не будет. 0 отменяет этот запрет.
+
+$getorig = Ans::get('getorig','bool'); //Показывает оригинальную картинку без изменения размеров, как есть... без водяного знака
+
+$conf=Imager::$conf;
 
 $default = false;
 $orig = false;
-$src = imager_prepareSrc($src);
 
-if (!$src && $or) {
-	//Путь не найден смотрим or
-	$src = imager_prepareSrc($or);
-}
+
+
+
+
 
 if (isset($_GET['info'])) {
 	infra_admin(true);
@@ -82,81 +70,50 @@ if (isset($_GET['info'])) {
 }
 
 if ($src && (preg_match("/\/\./", $src) || (mb_substr($src, 0, 1) == '.' && mb_substr($src, 1, 1) != '/'))) {
+
 	header('HTTP/1.1 403 Forbidden');
 
-	return;
+	return Ans::err($ans,'Путь содержит запрещённые символы');
 }
 
 if (!$src) {
 	$default = true;
-	$src = infra_theme('*imager/noimage.png');
+	$src = Imager::noImage();
 	if (!$src) {
 		header('HTTP/1.0 404 Not Found');
-
-		return;
+		return Ans::err('Noimage Not found');
 	}
 }
 
 if ($getorig) {
 	infra_admin(true);
 }
+
 if (!is_null($ignoremark)) {
 	infra_admin(true);
 }
 if ($getorig) {
 	infra_admin(true);
 }
+
 $gray = isset($_GET['gray']);
 $args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
 
-$data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
-	$p1 = infra_srcinfo($isrc);//Нужна папка со звёздочкой
-	$p = infra_srcinfo($src);
-
-
-
-	if (in_array($p['ext'], array('docx','mht'))) {
+$data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
+	
+	$ext = Imager::getExt($src);
+	if (in_array($ext, array('docx','mht'))) {
 		die("docx, mht TODO");
 		/*
 			TODO: Смотрим подключён ли плагин files для того чтобы достать картинку и файла
 		*/
-		if (!infra_theme('*files/files.inc.php')) {
-			$default = true;
-			$src = infra_theme('*imager/noimage.png');
-		} else {
-			infra_require('*files/files.inc.php');
-
-			if ($re) {
-				$re = '&re';
-			} else {
-				$re = '';
-			}
-			if ($p['ext'] == 'docx') {
-				$p = files_get(infra_toutf($p1['folder']), infra_toutf($p['id']));
-				if (!$p['images'][0]) {
-					$default = true;
-					$src = infra_theme('*imager/noimage.png');
-					//header('HTTP/1.1 404 Not Found');
-					//return;
-				} else {
-					$src = $p['images'][0]['src'];
-				}
-			} elseif ($p['ext'] == 'mht') {
-				$p = infra_loadJSON('*pages/mht/mht.php?preview'.$re.'&src='.infra_toutf($p['src']));
-				if (!$p['images'][0]) {
-					$default = true;
-					$src = infra_theme('*imager/noimage.png');
-					//header('HTTP/1.1 404 Not Found');
-					//return;
-				} else {
-					$src = $p['images'][0]['src'];
-				}
-			}
-		}
+		
+		$default = true;
+		$src = Imager::noImage('*imager/noimage.png');
 	}
-	$src = infra_tofs($src);
-	$type = imager_type($src);
-
+	$src = Imager::tofs($src);
+	$type = Imager::getType($src);
+	/*
 	if (!is_null($ignoremark)) {
 		//Метку ignore может выставить только администратор
 		//На файлы с такой меткой водяной знак никогда не ставится
@@ -193,14 +150,14 @@ $data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 	if ($type && $mark && !$default) {
 		//Это не значит что нужно делать бэкап
 		imager_mark($src, $type);//Накладываем водяной знак
-	}
+	}*/
 
 	/*$info=imager_readInfo($src);
 	if($info['ignore']){
 		$orig=$info['orig'];
 	}*/
 
-	$limark = false;//Не делать водяной знак если площать меньше 150x150
+	/*$limark = false;//Не делать водяной знак если площать меньше 150x150
 	if ($w && $h) {
 		$limark = ($conf['imager']['waterlim'] > ($w * $h));
 	} elseif ($w || $h) {
@@ -241,13 +198,13 @@ $data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 				//die('Не найден оригинал');
 			}
 		}
-	}
+	}*/
 	//$src с водяной меткой если нужно
 	if ($gray) {
-		$src = imager_makeGray($src, $temp);//новый src уже на серую картинку
+		$src = Imager::makeGray($src, $temp);//новый src уже на серую картинку
 	}
 
-	$data = imager_scale($src, $w, $h, $crop, $top);
+	$data = Imager::scale($src, $w, $h, $crop, $top);
 
 	if (!$data) {
 		die('Resize Error');
@@ -256,7 +213,7 @@ $data = infra_cache(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 	$br = infra_imager_browser();
 	$name = preg_replace("/(.*\/)*/", '', $isrc);
 	
-	$name = infra_toutf($name);
+	$name = Imager::toutf($name);
 	
 	if (!preg_match('/ff/', $br)) {
 		$name = rawurlencode($name);
