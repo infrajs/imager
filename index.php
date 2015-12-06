@@ -85,7 +85,7 @@ $args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top,
 
 $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	
-	$ext = Imager::getExt($src);
+	$ext = Path::getExt($src);
 	if (in_array($ext, array('docx','mht'))) {
 		die("docx, mht TODO");
 		/*
