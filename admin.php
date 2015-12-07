@@ -1,72 +1,19 @@
 <?php
-/*
-Copyright 2008-2011 ITLife, Ltd. Togliatti, Samara Oblast, Russian Federation. http://itlife-studio.ru
-*/
+namespace infrajs\imager;
+use infrajs\access\Access;
+use infrajs\path\Path;
 
-infra_require('*imager/imager.inc.php');
-	infra_admin(true);
-
-if (!function_exists('runfolder')) {
-	function runfolder($dir, $f = 1, $d = 0, $sub = false, $exts = false, &$filelist = array(), $pre = '')
-	{
-		if (is_dir($dir) && $dh = opendir($dir)) {
-			while (($file = readdir($dh)) !== false) {
-				if ($file[0] == '.') {
-					continue;
-				}
-				if ($file == 'vendor') {
-					continue;
-				}
-				if ($file[0] == '~') {
-					continue;
-				}
-
-				$path = $dir.$file;
-				if (is_file($path) && $exts) {
-					preg_match('/\.(\w{0,4})$/', $file, $math);//Расширение при поиске не учитываем
-						$ext = strtolower($math[1]);
-					if (!in_array($ext, $exts)) {
-						continue;
-					}
-				}
-
-//$count++;
-				//if($count<$lims)continue;
-				//if($count>=($lims+$limc))break;
-
-
-				if (!$f && is_file($path) && (!$d || !is_dir($path))) {
-					continue;
-				}//Файлы не надо
-
-
-//if(!$f && is_file($path))continue;//Файлы не надо
-				if (is_dir($path)) {
-					if ($sub) {
-						runfolder($path.'/', $f, $d, $sub, $exts, $filelist, $pre.$file.'/');
-					}
-					if (!$d) {
-						continue;
-					}//Папки не надо
-				}
-				if ($d && preg_match("/\.files$/", $file)) {
-					continue;
-				}
-					//$weblife->modified(false,$path);
-					array_push($filelist, $pre.$file);
-			}
-			closedir($dh);
-		}
-
-		return $filelist;
-	}
+if (!is_file('vendor/autoload.php')) {
+    chdir('../../../');
+    require_once('vendor/autoload.php');
 }
-$dirs = infra_dirs();
 
-$dirorig = $dirs['data'].'imager/.notwater/';
+Access::admin(true);
 
-$iswater = infra_theme($dirs['data'].'imager/mark.png');
-$ishwater = infra_theme($dirs['data'].'imager/.mark.png');
+$dirorig = Path::theme('~imager/.notwater/');
+$iswater = Path::theme('~imager/mark.png');
+$ishwater = Path::theme('~imager/.mark.png');
+
 $water = $iswater || $ishwater;
 if (isset($_GET['action'])) {
 	$act = $_GET['action'];
@@ -87,8 +34,8 @@ if (isset($_GET['action'])) {
 		}
 		if (!isset($_SESSION['imager'])) {
 			//Шаг один
-			$conf = infra_config();
-			$files = runfolder($dir, 1, 0, true, $conf['imager']['images']);
+			$conf = Imager::$conf;
+			$files = Iadmin::runfolder($dir, 1, 0, true, $conf['images']);
 			//Если на пробежке обламаемся сессия создана не будет и при обновлении продолжим...
 			$_SESSION['imager'] = array();
 			$_SESSION['imager']['origs'] = array();
@@ -111,18 +58,18 @@ if (isset($_GET['action'])) {
 
 		//Теперь у нас есть только массив origs
 		foreach ($_SESSION['imager']['origs'] as $orig => $srcs) {
-			$origf = infra_theme($orig);
+			$origf = Path::theme($orig);
 			if (!$origf) {
 				//if(preg_match("/^core\/data\//",$orig))continue;//старая версия сайта ничего с этим не поделать
-				//die('Не найден оригинал '.infra_toutf($orig)." для картинки ".infra_toutf(print_r($srcs,true)).'<br>\n');
-				echo 'Не найден оригинал '.infra_toutf($orig).' для картинки '.infra_toutf(print_r($srcs, true)).'<br>\n';
+				//die('Не найден оригинал '.Path::toutf($orig)." для картинки ".Path::toutf(print_r($srcs,true)).'<br>\n');
+				echo 'Не найден оригинал '.Path::toutf($orig).' для картинки '.Path::toutf(print_r($srcs, true)).'<br>\n';
 				continue;
 			}
 
 			foreach ($srcs as $src) {
 				$r = copy($origf, $src);
 				if (!$r) {
-					die('Не удалось скопировать на место оригинал '.infra_toutf($src));
+					die('Не удалось скопировать на место оригинал '.Path::toutf($src));
 				}
 			}
 			$r = unlink($origf);
@@ -168,7 +115,7 @@ $countorig = sizeof($files);
 	<div style="margin:50px 100px; font-family: Tahoma; font-size:14px">
 		Config.imager.watermark: <b>
 <?php
-$conf = infra_config();
+$conf = Infra::config();
 echo($conf['imager']['watermark'] ? 'true' : 'false');
 ?></b> - глобальный запрет и создавать или нет папку data/imager/<br>
 		Количество оригиналов иллюстраций с водяным знаком: <b><?php echo $countorig?></b>. 

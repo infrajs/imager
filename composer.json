@@ -3,6 +3,7 @@
 	"description": "Crop and resize images dynamicly in src",
 	"license": "GPL3",
 	"require": {
+		"infrajs/access":"~1",
 		"infrajs/ans":"~1",
 		"infrajs/once":"~1",
 		"infrajs/path":"~1",
@@ -10,5 +11,8 @@
 	},
 	"autoload": {
 		"psr-4": { "infrajs\\imager\\": "/" }
-	}
+	},
+	"suggest": {
+        "infrajs/infra": "Allows configure with files .infra.json and other usefull things like autoinstall, admin interface, test system"
+    }
 }

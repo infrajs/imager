@@ -459,11 +459,11 @@ function &_imager_readInfo($src)
 
 
 	if($metka=='imager'){//Водяной знак уже есть
-		$orig=trim(infra_toutf($file[$l-2]));//Путь до оригинала
+		$orig=trim(Path::toutf($file[$l-2]));//Путь до оригинала
 	}else{
 		$metka=preg_replace("/[\s\n]/",'',$file[$l-5]);//-1
 		if($metka=='imager'){//Водяной знак уже есть
-			$orig=trim(infra_toutf($file[$l-6]));//Путь до оригинала
+			$orig=trim(Path::toutf($file[$l-6]));//Путь до оригинала
 		}
 	}
 	*/
@@ -576,15 +576,15 @@ function &imager_makeInfo($src)
 	}
 	$info = array();
 	$info['host'] = $_SERVER['HTTP_HOST'];
-	$info['size'] = filesize(infra_tofs($orig));
+	$info['size'] = filesize(Path::tofs($orig));
 	$info['date'] = date('j.m.Y');
-	$info['orig'] = infra_toutf($orig);
+	$info['orig'] = Path::toutf($orig);
 
 	return $info;
 }
 /*function imager_mark($src, $type)
 {
-	$conf = infra_config();
+	$conf = Infra::config();
 	if (!$conf['imager']['watermark']) {
 		return;
 	}

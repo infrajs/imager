@@ -4,10 +4,10 @@ use infrajs\ans\Ans;
 use infrajs\path\Path;
 use infrajs\cache\Cache;
 
-if(!is_file('vendor/autoload.php')) {
+if (!is_file('vendor/autoload.php')) {
 	chdir('../../../');
+	require_once('vendor/autoload.php');
 }
-require_once('vendor/autoload.php');
 
 $ans = array();
 
@@ -42,7 +42,7 @@ $orig = false;
 
 
 if (isset($_GET['info'])) {
-	infra_admin(true);
+	Access::admin(true);
 	$info = imager_readInfo($src);
 	if (!$info) {
 		echo 'В файле нет сохранённых данных, файл оригинальный';
@@ -70,14 +70,14 @@ if (!$src) {
 }
 
 if ($getorig) {
-	infra_admin(true);
+	Access::admin(true);
 }
 
 if (!is_null($ignoremark)) {
-	infra_admin(true);
+	Access::admin(true);
 }
 if ($getorig) {
-	infra_admin(true);
+	Access::admin(true);
 }
 
 $gray = isset($_GET['gray']);
@@ -107,7 +107,7 @@ $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 			//Если файл был с водяным знаком
 			$orig = $info['orig'];
 			if ($orig) {
-				$orig = infra_theme($orig);
+				$orig = Path::theme($orig);
 				if ($orig) {
 					//Если оригинальный файл найден
 					$r = copy($orig, $src);//Востановили оригинал без удаления оригинала
@@ -163,7 +163,7 @@ $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 		$orig = $info['orig'];
 
 		if ($orig) {
-			$orig = infra_theme($orig);
+			$orig = Path::theme($orig);
 			if (!$orig) {
 				die('Оригинал не найден');
 			} else {
@@ -175,7 +175,7 @@ $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 	} elseif ($limark) {
 		$info = imager_readInfo($src);
 		if (@$info['water']) {
-			$orig = infra_theme($info['orig']);
+			$orig = Path::theme($info['orig']);
 			if ($orig) {
 				$src = $orig;
 			} else {

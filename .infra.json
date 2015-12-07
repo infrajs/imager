@@ -1,5 +1,6 @@
 {
 	"imager":{
+		"infraconf":"Imager::$conf",
 		"require":"*imager/infra.php",
 		"remotecachehour":4,
 		"watermark":false,
