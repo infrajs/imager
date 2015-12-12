@@ -557,12 +557,10 @@ function &imager_makeInfo($src)
 	if ($info) {
 		return $info;
 	}
-
-	$dirs = infra_dirs();
-	$dir = $dirs['data'].'imager/';
-	@mkdir($dir);
+	$dir = '~imager/';
+	Path::mkdir($dir);
 	$dir .= '.notwater/';
-	@mkdir($dir);
+	Path::mkdir($dir);
 
 	$i = '';
 	$orig = $dir.Path::encode($src);

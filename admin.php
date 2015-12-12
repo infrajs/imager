@@ -80,19 +80,7 @@ if (isset($_GET['action'])) {
 		}
 
 		$files = runfolder($dirorig, 1, 0);
-		if (sizeof($files) > 0) {
-			//Если остались не востановленные оригиналы.. делаем их backup
-			$dirs = infra_dirs();
-			if (!is_dir($dirs['data'])) {
-				mkdir($dirs['data']); //Режим без записи на жёсткий диск
-			}
-			$dirbackup = $dirs['data'].'imager/.backuporig/';
-			$dirbackup .= date('j.d.Y').'_'.time().'/';
-			$r = rename($dirorig, $dirbackup);
-			if (!$r) {
-				die('Не удалось сделать backup оставшихся оригиналов');
-			}
-		}
+
 		unset($_SESSION['imager']);
 	} elseif ($act == 'delcache') {
 		infra_mem_flush();
