@@ -93,7 +93,7 @@ $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 		*/
 		
 		$default = true;
-		$src = Imager::noImage('*imager/noimage.png');
+		$src = Imager::noImage('-imager/noimage.png');
 	}
 	$src = Imager::tofs($src);
 	$type = Imager::getType($src);

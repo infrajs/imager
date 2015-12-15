@@ -2,6 +2,7 @@
 namespace infrajs\imager;
 use infrajs\access\Access;
 use infrajs\path\Path;
+use infrajs\infra\Infra;
 
 if (!is_file('vendor/autoload.php')) {
     chdir('../../../');
@@ -79,22 +80,22 @@ if (isset($_GET['action'])) {
 			unset($_SESSION['imager']['origs'][$orig]);//Пометили что этот оригинал уже востановили
 		}
 
-		$files = runfolder($dirorig, 1, 0);
+		$files = Iadmin::runfolder($dirorig, 1, 0);
 
 		unset($_SESSION['imager']);
 	} elseif ($act == 'delcache') {
 		infra_mem_flush();
 	}
-	header('location: ?*imager/admin.php');
+	header('location: ?-imager/admin.php');
 	exit;
 }
-$files = runfolder($dirorig);
+$files = Iadmin::runfolder($dirorig);
 $countorig = sizeof($files);
 ?>
 <html>
 <head>
 	<link href="vendor/twbs/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-	<script src="?*infra/js.php"></script>
+	<script src="?-infra/js.php"></script>
 	<script src="vendor/components/jquery/jquery.js"></script>
 	<script src="vendor/twbs/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script>infra.Crumb.init()</script>

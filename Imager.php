@@ -37,7 +37,7 @@ class Imager {
 		$conf=static::$conf;
 		$ext=Path::getExt($src);
 		if (preg_match("/^https{0,1}:\/\//", $src)) {
-			//$src=Path::theme('*imager/noimage.png');
+			//$src=Path::theme('-imager/noimage.png');
 			$src = Imager::remote($src);
 		} else {
 			if ($ext=='php') {
@@ -605,7 +605,7 @@ function &imager_makeInfo($src)
 		return;
 	}//Если нужно повторно наложить водяной знак, для этого нужно удалить все старые знаки
 
-	$water = Path::theme('*imager/mark.png');
+	$water = Path::theme('-imager/mark.png');
 
 	if (!$water) {
 		return;
