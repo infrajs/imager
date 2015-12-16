@@ -6,10 +6,10 @@
 ## use
 Для работы скрипта в корне проекта рядом с ```vendor/``` нужно создать папку ```cache/``` с подпапкой ```mem/```. Папка ```cache/mem/``` должна быть доступна для записи.
 ```php
-vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg&w=300&h=200&crop=1&top=1
+vendor/infrajs/imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
 ```
-
-## use [infrajs](https://github.com/infrajs)
+"-" сокращение для "vendor/infrajs/". Подробней [infrajs/path](https://github.com/infrajs/path)
+## use [infrajs](https://github.com/infrajs/infrajs)
 ```php
 ?-imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
 ```
