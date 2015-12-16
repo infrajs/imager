@@ -4,11 +4,12 @@
 ## Установка
 Устанавливается скрипт через [composer](http://getcomposer.org), ([русская справка по composer](http://loftblog.ru/2013/05/31/paketnyj-menedzher-php-composer-uskoryajsya/)). В секцию require нужно добавить ```"infrajs/imager":"~1"```
 ## use
+Для работы скрипта в корне проекта рядом с ```vendor/``` нужно создать папку ```cache/``` с подпапкой ```mem/```. Папка ```cache/mem/``` должна быть доступна для записи.
 ```php
-vendor/infrajs/imager/imager.php?src=path/to/image.jpg&w=100&h=200&crop=1&top=1
+vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg&w=300&h=200&crop=1&top=1
 ```
 
 ## use [infrajs](https://github.com/infrajs)
 ```php
-?-imager/imager.php?src=~image.jpg&w=100&h=200&crop=1&top=1
+?-imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
 ```
