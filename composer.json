@@ -5,7 +5,6 @@
 	"require": {
 		"infrajs/access":"~1",
 		"infrajs/ans":"~1",
-		"infrajs/once":"~1",
 		"infrajs/path":"~1",
 		"infrajs/cache":"~1"
 	},
