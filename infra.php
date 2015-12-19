@@ -2,6 +2,6 @@
 namespace infrajs\imager;
 use infrajs\infra\Infra;
 
-$conf=&Infra::config('imager');
+$conf=&Config::get('imager');
 Imager::$conf=array_merge(Imager::$conf, $conf);
 $conf=Imager::$conf;

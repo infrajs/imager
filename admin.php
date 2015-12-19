@@ -104,7 +104,7 @@ $countorig = sizeof($files);
 	<div style="margin:50px 100px; font-family: Tahoma; font-size:14px">
 		Config.imager.watermark: <b>
 <?php
-$conf = Infra::config();
+$conf = Config::get();
 echo($conf['imager']['watermark'] ? 'true' : 'false');
 ?></b> - глобальный запрет и создавать или нет папку data/imager/<br>
 		Количество оригиналов иллюстраций с водяным знаком: <b><?php echo $countorig?></b>. 

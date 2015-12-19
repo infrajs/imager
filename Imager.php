@@ -582,7 +582,7 @@ function &imager_makeInfo($src)
 }
 /*function imager_mark($src, $type)
 {
-	$conf = Infra::config();
+	$conf = Config::get();
 	if (!$conf['imager']['watermark']) {
 		return;
 	}
