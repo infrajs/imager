@@ -2,13 +2,12 @@
 namespace infrajs\imager;
 use infrajs\access\Access;
 use infrajs\path\Path;
-use infrajs\infra\Infra;
+use infrajs\infra\Config;
 
 if (!is_file('vendor/autoload.php')) {
     chdir('../../../');
     require_once('vendor/autoload.php');
 }
-
 Access::admin(true);
 
 $dirorig = Path::theme('~imager/.notwater/');
@@ -104,8 +103,8 @@ $countorig = sizeof($files);
 	<div style="margin:50px 100px; font-family: Tahoma; font-size:14px">
 		Config.imager.watermark: <b>
 <?php
-$conf = Config::get();
-echo($conf['imager']['watermark'] ? 'true' : 'false');
+$conf = Config::get('imager');
+echo($conf['watermark'] ? 'true' : 'false');
 ?></b> - глобальный запрет и создавать или нет папку data/imager/<br>
 		Количество оригиналов иллюстраций с водяным знаком: <b><?php echo $countorig?></b>. 
 		<br><a href="?action=removemarks">Удалить на иллюстрациях водяной знак</a>. <small>Если будет ошибка на ограничение времени выполенния скрипта, нужно обновлять страницу пока скрипт не закончит работу.</small><br>

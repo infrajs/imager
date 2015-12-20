@@ -1,10 +1,7 @@
 {
-	"imager":{
-		"infraconf":"Imager::$conf",
-		"require":"-imager/infra.php",
-		"remotecachehour":4,
-		"watermark":false,
-		"waterlim": 22500,
-		"tester":"-imager/tests/"
-	}
+	"conf":"infrajs\\imager\\Imager",
+	"remotecachehour":4,
+	"watermark":false,
+	"waterlim": 22500,
+	"tester":"tests/"
 }
