@@ -2,7 +2,7 @@
 namespace infrajs\imager;
 use infrajs\access\Access;
 use infrajs\path\Path;
-use infrajs\infra\Config;
+use infrajs\config\Config;
 
 if (!is_file('vendor/autoload.php')) {
     chdir('../../../');
@@ -94,7 +94,7 @@ $countorig = sizeof($files);
 <html>
 <head>
 	<link href="vendor/twbs/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-	<script src="?-infra/js.php"></script>
+	<script src="?-config/js.php"></script>
 	<script src="vendor/components/jquery/jquery.js"></script>
 	<script src="vendor/twbs/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script>infra.Crumb.init()</script>
