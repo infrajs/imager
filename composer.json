@@ -10,8 +10,5 @@
 	},
 	"autoload": {
 		"psr-4": { "infrajs\\imager\\": "/" }
-	},
-	"suggest": {
-        "infrajs/infra": "Allows configure with files .infra.json and other usefull things like autoinstall, admin interface, test system"
-    }
+	}
 }
