@@ -50,11 +50,13 @@ class Imager {
 		if ($src && is_dir($src)) {
 			//папка смотрим в ней для src
 			$list = array();
-			array_map(function ($file) use (&$list) {
+			
+			array_map(function ($file) use (&$list, $src) {
 				if ($file{0} == '.') return;
-				if (in_array($ext, static::$exts)) $list[] = $file;
+				if (!is_file($src.$file)) return;
+				$ext=Path::getExt($file);
+				if (in_array($ext, Imager::$exts)) $list[] = $file;
 			}, scandir($src));
-
 			if (empty($list[0])) {
 				$src = false;
 			} else {

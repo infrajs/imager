@@ -11,5 +11,5 @@ vendor/infrajs/imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
 "-" сокращение для "vendor/infrajs/". Подробней [infrajs/path](https://github.com/infrajs/path)
 ## use [infrajs](https://github.com/infrajs/infrajs)
 ```php
-?-imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
+/-imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
 ```
