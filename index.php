@@ -11,25 +11,25 @@ if (!is_file('vendor/autoload.php')) {
 
 $ans = array();
 
-$isrc = Ans::get('src');
+$isrc = Ans::GET('src');
 if (!$isrc) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
 $src = Imager::prepareSrc($isrc);
-$or = Ans::get('or'); //Путь на случай если src не найден
+$or = Ans::GET('or'); //Путь на случай если src не найден
 
 if (!$src && $or) $src = Imager::prepareSrc($or); //Путь не найден смотрим or
 
 Imager::modified($src);
 
 
-$mark = Ans::get('mark','bool');
-$w = Ans::get('w', 'int');
-$h = Ans::get('h', 'int');
-$top = Ans::get('top','bool');
-$crop = Ans::get('crop','bool');
-$ignoremark = Ans::get('ignoremark','bool', null); //1 - Навсегда убирает водяной знак с картинки и больше водяной знак добавляться на неё не будет. 0 отменяет этот запрет.
+$mark = Ans::GET('mark','bool');
+$w = Ans::GET('w', 'int');
+$h = Ans::GET('h', 'int');
+$top = Ans::GET('top','bool');
+$crop = Ans::GET('crop','bool');
+$ignoremark = Ans::GET('ignoremark','bool', null); //1 - Навсегда убирает водяной знак с картинки и больше водяной знак добавляться на неё не будет. 0 отменяет этот запрет.
 
-$getorig = Ans::get('getorig','bool'); //Показывает оригинальную картинку без изменения размеров, как есть... без водяного знака
+$getorig = Ans::GET('getorig','bool'); //Показывает оригинальную картинку без изменения размеров, как есть... без водяного знака
 
 $conf=Imager::$conf;
 
