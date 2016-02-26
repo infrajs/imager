@@ -1,6 +1,7 @@
 {
 	"conf":"infrajs\\imager\\Imager",
 	"remotecachehour":4,
+	"dependencies":"path",
 	"watermark":false,
 	"waterlim": 22500,
 	"tester":"tests/"
