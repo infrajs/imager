@@ -3,6 +3,7 @@ namespace infrajs\imager;
 use infrajs\ans\Ans;
 use infrajs\path\Path;
 use infrajs\cache\Cache;
+use infrajs\nostore\Nostore;
 
 if (!is_file('vendor/autoload.php')) {
 	chdir('../../../');
@@ -12,6 +13,10 @@ if (!is_file('vendor/autoload.php')) {
 $ans = array();
 
 $isrc = Ans::GET('src');
+$psrc = Path::pretty($isrc);
+
+if ($psrc{0} != '~') Nostore::initStat();
+
 if (!$isrc) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
 $src = Imager::prepareSrc($isrc);

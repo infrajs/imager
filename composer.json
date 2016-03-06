@@ -7,6 +7,7 @@
 		"infrajs/access":"~1",
 		"infrajs/ans":"~1",
 		"infrajs/path":"~1",
+		"infrajs/nostore":"~1",
 		"infrajs/cache":"~1"
 	},
 	"autoload": {
