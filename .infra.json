@@ -4,5 +4,6 @@
 	"dependencies":"path",
 	"watermark":false,
 	"waterlim": 22500,
+	"update":"update.php",
 	"tester":"tests/"
 }
