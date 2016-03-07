@@ -15,7 +15,7 @@ $ans = array();
 $isrc = Ans::GET('src');
 $psrc = Path::pretty($isrc);
 
-if ($psrc{0} != '~') Nostore::initStat();
+Nostore::pubStat();//Если кэширование разрешено сделает его долгим как для статики
 
 if (!$isrc) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
