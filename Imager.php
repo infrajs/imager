@@ -4,7 +4,12 @@ use infrajs\once\Once;
 use infrajs\path\Path;
 
 class Imager {
-	public static $conf = array();
+	public static $conf = array(
+		"jpegquality" => 77,
+		"remotecachehour" => 4,
+		"watermark" => false,
+		'waterlim' => 22500
+	);
 	public static $exts = array("jpeg", "jpg", "png", "gif");
 	public static function modified($src) { 
 		$conf=static::$conf;
@@ -317,9 +322,11 @@ class Imager {
 
 		imagecopyresampled($image_p, $image, 0, 0, $dw / 2, $fromtop, $w, $h, $width_orig - $dw, $height_orig - $dh);
 		$fn = 'image'.$type;
-		$quality = 90;
+
+		$quality = static::$conf['jpegquality'];
+		
 		if ($type == 'png') {
-			$quality = 2;
+			$quality = 9;
 		}
 
 		ob_start();
@@ -332,12 +339,7 @@ class Imager {
 		return $data;
 	}
 }
-Imager::$conf = array(
-	"cache" => Path::$conf['cache'].'imager/',
-	"remotecachehour" => 4,
-	"watermark" => false,
-	'waterlim' => 22500
-);
+Imager::$conf["cache"] = Path::$conf['cache'].'imager/';
 
 
 
