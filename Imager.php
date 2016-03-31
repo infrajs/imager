@@ -7,6 +7,7 @@ class Imager {
 	public static $conf = array(
 		"jpegquality" => 77,
 		"remotecachehour" => 4,
+		"optipng" => false,
 		"watermark" => false,
 		'waterlim' => 22500
 	);
@@ -134,32 +135,32 @@ class Imager {
 	}
 	public static function getType($src)
 	{
-		$src = static::tofs($src);
-
-		$handle = fopen($src, 'r');
-		$line = fgets($handle, 50);
-		$line2 = fgets($handle, 50);
-		fclose($handle);
-		if (preg_match('/JFIF/', $line)) {
-			return 'jpeg';
-		}
-		if (preg_match('/PNG/', $line)) {
-			return 'png';
-		}
-		if (preg_match('/GIF/', $line)) {
-			return 'gif';
-		}
-		if (preg_match('/Exif/', $line)) {
-			return 'jpeg';
-		}
-		if (preg_match('/Exif/', $line2)) {
-			return 'jpeg';
-		}
-		if (preg_match('/BM/', $line)) {
-			return 'wbmp';
-		}
-
-		return false;
+		return Once::exec(__FILE__, function ($src) {
+			$src = Path::tofs($src);
+			$handle = fopen($src, 'r');
+			$line = fgets($handle, 50);
+			$line2 = fgets($handle, 50);
+			fclose($handle);
+			if (preg_match('/JFIF/', $line)) {
+				return 'jpeg';
+			}
+			if (preg_match('/PNG/', $line)) {
+				return 'png';
+			}
+			if (preg_match('/GIF/', $line)) {
+				return 'gif';
+			}
+			if (preg_match('/Exif/', $line)) {
+				return 'jpeg';
+			}
+			if (preg_match('/Exif/', $line2)) {
+				return 'jpeg';
+			}
+			if (preg_match('/BM/', $line)) {
+				return 'wbmp';
+			}
+			return false;
+		}, array($src));
 	}
 	public static function makeGray($img_path, &$temp = false)
 	{
@@ -226,6 +227,15 @@ class Imager {
 		}
 
 		return $output_path;
+	}
+	public static function optipng($data, $src){
+		if (!Imager::$conf['optipng']) return $data;
+		$type = Imager::getType($src);
+		if ($type!='png') return $data;
+		$src = Path::resolve(Imager::$conf['cache']).'opti.png';
+		file_put_contents($src, $data);
+		exec('optipng '.$src.' -o7 -out '.$src.'.res.png');
+		return file_get_contents($src.'.res.png');
 	}
 	public static function scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
 	{

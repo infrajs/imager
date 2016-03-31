@@ -3,6 +3,7 @@
 	"remotecachehour":4,
 	"dependencies":"path",
 	"watermark":false,
+	"optipng":false,
 	"waterlim": 22500,
 	"update":"update.php",
 	"tester":"tests/"

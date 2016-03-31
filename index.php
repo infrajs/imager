@@ -195,10 +195,10 @@ $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 	}
 
 	$data = Imager::scale($src, $w, $h, $crop, $top);
+	if (!$data) die('Resize Error');
 
-	if (!$data) {
-		die('Resize Error');
-	}
+	$data = Imager::optipng($data, $src);
+	if (!$data) die('Optipng Error');
 
 	$br = infra_imager_browser();
 	$name = preg_replace("/(.*\/)*/", '', $isrc);
