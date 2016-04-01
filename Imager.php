@@ -228,13 +228,14 @@ class Imager {
 
 		return $output_path;
 	}
-	public static function optipng($data){
+	public static function optipng($data, $id){
 		if (!Imager::$conf['optipng']) return $data;
-		$src = Path::resolve(Imager::$conf['cache']).'opti.png';
-		if (is_file($src.'.res.png')) unlink($src.'.res.png');
+		$src = Path::resolve(Imager::$conf['cache']).'opti.'.$id.'.png';
 		file_put_contents($src, $data);
-		exec('optipng '.$src.' -out '.$src.'.res.png');
-		return file_get_contents($src.'.res.png');
+		system('optipng '.$src.' -out '.$src.'.res.png');
+		$data = file_get_contents($src.'.res.png');
+		unlink($src.'.res.png');
+		return $data;
 	}
 	public static function scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
 	{

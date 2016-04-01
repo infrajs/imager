@@ -198,7 +198,7 @@ $data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, 
 	if (!$data) die('Resize Error');
 
 	if ($type=='png') {
-		$data = Imager::optipng($data);
+		$data = Imager::optipng($data, md5($src.$w.$h.$crop.$top));
 		if (!$data) die('Optipng Error');
 	}
 
