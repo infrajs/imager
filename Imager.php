@@ -135,7 +135,7 @@ class Imager {
 	}
 	public static function getType($src)
 	{
-		return Once::exec(__FILE__, function ($src) {
+		return Once::exec(__FILE__.'getTpype', function ($src) {
 			$src = Path::tofs($src);
 			$handle = fopen($src, 'r');
 			$line = fgets($handle, 50);
@@ -228,14 +228,12 @@ class Imager {
 
 		return $output_path;
 	}
-	public static function optipng($data, $src){
+	public static function optipng($data){
 		if (!Imager::$conf['optipng']) return $data;
-		$type = Imager::getType($src);
-		if ($type!='png') return $data;
 		$src = Path::resolve(Imager::$conf['cache']).'opti.png';
-		unlink($src.'.res.png');
+		if (is_file($src.'.res.png')) unlink($src.'.res.png');
 		file_put_contents($src, $data);
-		exec('optipng '.$src.' -o7 -out '.$src.'.res.png');
+		exec('optipng '.$src.' -out '.$src.'.res.png');
 		return file_get_contents($src.'.res.png');
 	}
 	public static function scale($src, $w, $h, $crop = false, $top = false, $bottom = false)

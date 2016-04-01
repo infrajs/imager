@@ -89,7 +89,7 @@ if ($getorig) {
 $gray = isset($_GET['gray']);
 $args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
 
-$data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
+$data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	
 	$ext = Path::getExt($src);
 	if (in_array($ext, array('docx','mht'))) {
@@ -197,8 +197,10 @@ $data = Cache::exec(array($isrc), 'imager.php', function ($src, $ignoremark, $ma
 	$data = Imager::scale($src, $w, $h, $crop, $top);
 	if (!$data) die('Resize Error');
 
-	$data = Imager::optipng($data, $src);
-	if (!$data) die('Optipng Error');
+	if ($type=='png') {
+		$data = Imager::optipng($data);
+		if (!$data) die('Optipng Error');
+	}
 
 	$br = infra_imager_browser();
 	$name = preg_replace("/(.*\/)*/", '', $isrc);
