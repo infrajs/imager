@@ -233,6 +233,7 @@ class Imager {
 		$type = Imager::getType($src);
 		if ($type!='png') return $data;
 		$src = Path::resolve(Imager::$conf['cache']).'opti.png';
+		unlink($src.'.res.png');
 		file_put_contents($src, $data);
 		exec('optipng '.$src.' -o7 -out '.$src.'.res.png');
 		return file_get_contents($src.'.res.png');
