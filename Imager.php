@@ -232,7 +232,7 @@ class Imager {
 		if (!Imager::$conf['optipng']) return $data;
 		$src = Path::resolve(Imager::$conf['cache']).'opti.'.$id.'.png';
 		file_put_contents($src, $data);
-		exec('optipng '.$src.' -out '.$src.'.res.png');
+		exec('optipng '.$src.' -o5 -out '.$src.'.res.png');
 		$data = file_get_contents($src.'.res.png');
 		unlink($src.'.res.png');
 		return $data;
