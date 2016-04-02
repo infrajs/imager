@@ -193,7 +193,7 @@ $data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, 
 	if ($gray) {
 		$src = Imager::makeGray($src, $temp);//новый src уже на серую картинку
 	}
-
+	
 	$data = Imager::scale($src, $w, $h, $crop, $top);
 	if (!$data) die('Resize Error');
 
@@ -219,7 +219,6 @@ $data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, 
 	}
 
 	$data = array('data' => $data, 'name' => $name, 'type' => $type);
-
 	return $data;
 }, $args, isset($_GET['re']));
 
