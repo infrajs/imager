@@ -2,7 +2,6 @@
 namespace infrajs\imager;
 use infrajs\access\Access;
 use infrajs\path\Path;
-use infrajs\config\Config;
 
 if (!is_file('vendor/autoload.php')) {
     chdir('../../../');
@@ -85,7 +84,7 @@ if (isset($_GET['action'])) {
 	} elseif ($act == 'delcache') {
 		infra_mem_flush();
 	}
-	header('location: ?-imager/admin.php');
+	header('location: /-imager/admin.php');
 	exit;
 }
 $files = Iadmin::runfolder($dirorig);
@@ -93,17 +92,13 @@ $countorig = sizeof($files);
 ?>
 <html>
 <head>
-	<link href="vendor/twbs/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
-	<script src="/-config/js.php"></script>
-	<script src="/vendor/components/jquery/jquery.js"></script>
-	<script src="/vendor/twbs/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script>infra.Crumb.init()</script>
+	
 </head>
 <body>
 	<div style="margin:50px 100px; font-family: Tahoma; font-size:14px">
 		Config.imager.watermark: <b>
 <?php
-$conf = Config::get('imager');
+$conf = Imager::$conf;
 echo($conf['watermark'] ? 'true' : 'false');
 ?></b> - глобальный запрет и создавать или нет папку data/imager/<br>
 		Количество оригиналов иллюстраций с водяным знаком: <b><?php echo $countorig?></b>. 
