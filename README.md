@@ -32,7 +32,7 @@
 /-imager/?src=-imager/test.jpg&w=300&h=200&crop=1&top=1
 ```
 Доступен с расширением [infrajs/path](https://github.com/infrajs/path)
-Требуется настройка [.htaccess](https://github.com/infrajs/path/blob/master/README.md)
+Требуется настройка **.htaccess**
 
 ## composer.json
 ```json
