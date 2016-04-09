@@ -5,8 +5,9 @@
 Устанавливается скрипт через [composer](http://getcomposer.org), ([русская справка по composer](http://loftblog.ru/2013/05/31/paketnyj-menedzher-php-composer-uskoryajsya/)). В секцию require нужно добавить 
 ```json
 {
-"require":{
-  "infrajs/imager":"~1",
+  "require":{
+    "infrajs/imager":"~1",
+  }
 }
 ```
 
