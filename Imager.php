@@ -38,7 +38,7 @@ class Imager {
 		header('Last-Modified: '.$last_modified);
 	}
 	
-	public static function prepareSrc($src)
+	public static function prepareSrc($src, $num = 0)
 	{
 		$conf=static::$conf;
 		$ext=Path::getExt($src);
@@ -63,10 +63,10 @@ class Imager {
 				$ext=Path::getExt($file);
 				if (in_array($ext, Imager::$exts)) $list[] = $file;
 			}, scandir($src));
-			if (empty($list[0])) {
+			if (empty($list[$num])) {
 				$src = false;
 			} else {
-				$src = $src.$list[0];
+				$src = $src.$list[$num];
 			}
 		}
 		return $src;

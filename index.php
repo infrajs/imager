@@ -12,17 +12,19 @@ if (!is_file('vendor/autoload.php')) {
 $ans = array();
 
 $isrc = Ans::GET('src');
+$num = Ans::GET('num', 'int', 0);
+
 $psrc = Path::pretty($isrc);
 
 Nostore::pubStat();//Если кэширование разрешено сделает его долгим как для статики
 
 if (!$isrc) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
-$src = Imager::prepareSrc($isrc);
+$src = Imager::prepareSrc($isrc, $num);
 
 $or = Ans::GET('or'); //Путь на случай если src не найден
 
-if (!$src && $or) $src = Imager::prepareSrc($or); //Путь не найден смотрим or
+if (!$src && $or) $src = Imager::prepareSrc($or, $num); //Путь не найден смотрим or
 
 Imager::modified($src);
 
