@@ -6,7 +6,7 @@
 ([русская справка по composer](http://loftblog.ru/2013/05/31/paketnyj-menedzher-php-composer-uskoryajsya/)). 
 В секцию **require** нужно добавить две записи [infrajs/imager](https://github.com/infrajs/imager) и [infrajs/router](https://github.com/infrajs/router)
 
-###composer.json
+### composer.json
 
 ```json
 {
@@ -25,6 +25,12 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ vendor/infrajs/router/index.php [L,QSA]
 ```
 
+Или вариант, когда уже есть переадресация, которую не нужно ломать. Обработка только специальных адресов начинающихся с [-~!]
+```
+RewriteEngine on
+RewriteCond %{REQUEST_URI} ^/[-~\!]
+RewriteRule ^(.*)$ vendor/infrajs/router/index.php [L,QSA]
+```
 ## Использование
 
 ```php
