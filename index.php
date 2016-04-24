@@ -18,7 +18,7 @@ $psrc = Path::pretty($isrc);
 
 Nostore::pubStat();//Если кэширование разрешено сделает его долгим как для статики
 
-if (!$isrc) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
+if (is_null($isrc)) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
 $src = Imager::prepareSrc($isrc, $num);
 
