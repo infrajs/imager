@@ -12,6 +12,8 @@ if (!is_file('vendor/autoload.php')) {
 $ans = array();
 
 $isrc = Ans::GET('src');
+if (preg_match('/^\//',$isrc)) $isrc = preg_replace('/^\//','',$isrc);
+
 $num = Ans::GET('num', 'int', 0);
 
 $psrc = Path::pretty($isrc);
