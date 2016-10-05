@@ -5,6 +5,8 @@ use infrajs\path\Path;
 use infrajs\cache\Cache;
 use infrajs\nostore\Nostore;
 use infrajs\router\Router;
+use infrajs\hash\Hash;
+use infrajs\load\Load;
 
 if (!is_file('vendor/autoload.php')) {
 	chdir('../../../');
@@ -17,7 +19,7 @@ $isrc = Ans::GET('src');
 if (preg_match('/^\//',$isrc)) $isrc = preg_replace('/^\//','',$isrc);
 
 $num = Ans::GET('num', 'int', 0);
-
+$re = isset($_GET['re']);
 $psrc = Path::pretty($isrc);
 
 Nostore::pubStat();//Если кэширование разрешено сделает его долгим как для статики
@@ -94,7 +96,15 @@ if ($getorig) {
 $gray = isset($_GET['gray']);
 $args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
 
-$data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
+$execute = false;
+$cachesrc = Imager::$conf['cache'].'resize/'.Hash::make($args);
+if (is_file($cachesrc)) $cachetime = filemtime($cachesrc);
+else $cachetime = 0;
+$time = filemtime(Path::theme($isrc));
+
+if ($re || $time > $cachetime) $execute = true;
+if ($execute) {
+//$data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	
 	$ext = Path::getExt($src);
 	if (in_array($ext, array('docx','mht'))) {
@@ -223,10 +233,19 @@ $data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, 
 		$type = 'image/jpeg';
 	}
 
-	$data = array('data' => $data, 'name' => $name, 'type' => $type);
-	return $data;
-}, $args, isset($_GET['re']));
+	$ans = array('name' => $name, 'type' => $type);
+	//return $data;
+//}, $args, isset($_GET['re']));
+	//)
+	
+	file_put_contents($cachesrc.'.data', $data);
+	file_put_contents($cachesrc, Load::json_encode($ans));
+	$ans['data'] = $data;
+} else {
+	$ans = Load::loadJSON($cachesrc);
+	$ans['data'] = Load::loadTEXT($cachesrc.'.data');
+}
 
-header('Content-Disposition: filename="'.$data['name'].'";');
-header('content-type: image/'.$data['type']);
-echo $data['data'];
+header('Content-Disposition: filename="'.$ans['name'].'";');
+header('content-type: image/'.$ans['type']);
+echo $ans['data'];
