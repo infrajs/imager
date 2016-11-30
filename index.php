@@ -103,6 +103,12 @@ else $cachetime = 0;
 $time = filemtime(Path::theme($isrc));
 
 if ($re || $time > $cachetime) $execute = true;
+
+if (!$execute) {
+	$ans = Load::loadJSON($cachesrc);
+	$ans['data'] = Load::loadTEXT($cachesrc.'.data');
+	if (!$ans['data']) $execute = true;
+}
 if ($execute) {
 //$data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
 	
@@ -219,9 +225,8 @@ if ($execute) {
 
 	$br = infra_imager_browser();
 	$name = preg_replace("/(.*\/)*/", '', $isrc);
-	
+	if (!$name) $name = Path::encode($isrc);
 	$name = Imager::toutf($name);
-	
 	if (!preg_match('/ff/', $br)) {
 		$name = rawurlencode($name);
 	}
@@ -232,7 +237,7 @@ if ($execute) {
 	if (!$type) {
 		$type = 'image/jpeg';
 	}
-
+	
 	$ans = array('name' => $name, 'type' => $type);
 	//return $data;
 //}, $args, isset($_GET['re']));
