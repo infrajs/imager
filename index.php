@@ -251,6 +251,7 @@ if ($execute) {
 	$ans['data'] = Load::loadTEXT($cachesrc.'.data');
 }
 
+
 header('Content-Disposition: filename="'.$ans['name'].'";');
 header('content-type: image/'.$ans['type']);
 echo $ans['data'];
