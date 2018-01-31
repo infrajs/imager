@@ -97,10 +97,12 @@ $gray = isset($_GET['gray']);
 $args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
 
 $execute = false;
+
 $cachesrc = Imager::$conf['cache'].'resize/'.Hash::make($args);
+
 if (is_file($cachesrc)) $cachetime = filemtime($cachesrc);
 else $cachetime = 0;
-$time = filemtime(Path::theme($isrc));
+$time = filemtime(Path::theme($src));
 
 if ($re || $time > $cachetime) $execute = true;
 
@@ -124,6 +126,7 @@ if ($execute) {
 	}
 	$src = Imager::tofs($src);
 	$type = Imager::getType($src);
+
 	/*
 	if (!is_null($ignoremark)) {
 		//Метку ignore может выставить только администратор
@@ -246,6 +249,8 @@ if ($execute) {
 	file_put_contents($cachesrc.'.data', $data);
 	file_put_contents($cachesrc, Load::json_encode($ans));
 	$ans['data'] = $data;
+
+
 } else {
 	$ans = Load::loadJSON($cachesrc);
 	$ans['data'] = Load::loadTEXT($cachesrc.'.data');

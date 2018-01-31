@@ -2,7 +2,6 @@
 	"name": "infrajs/imager",
 	"homepage":"https://github.com/infrajs/imager",
 	"description": "Crop and resize images dynamicly in src",
-	"license": "GPL3",
 	"require": {
 		"infrajs/access":"~1",
 		"infrajs/once":"~1",

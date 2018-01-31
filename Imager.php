@@ -42,17 +42,20 @@ class Imager {
 	{
 		$conf=static::$conf;
 		$ext=Path::getExt($src);
+
 		if (preg_match("/^https{0,1}:\/\//", $src)) {
 			//$src=Path::theme('-imager/noimage.png');
 			$src = Imager::remote($src);
 		} else {
-			if ($ext=='php') {
+			if ($ext=='php' || preg_match('/imager\//', $src)) {
 				//Такое может быть если путь до картинки передан тоже с imager то есть двойной вызов
 				$src = Imager::getReal($src);
+				
 			} else {
 				$src = Path::theme($src);
 			}
 		}
+
 		if ($src && is_dir($src)) {
 			//папка смотрим в ней для src
 			$list = array();
@@ -69,6 +72,7 @@ class Imager {
 				$src = $src.$list[$num];
 			}
 		}
+
 		return $src;
 	}
 	
@@ -108,9 +112,11 @@ class Imager {
 		if (!$query) {
 			return Path::theme($src);
 		}
+
 		if (!$path) {
 			return static::getReal($query);
-		} elseif (preg_match("/imager\/p$/", $path)) {
+		} elseif (preg_match("/imager\//", $path)) {
+			
 			$p = explode('&', $query);
 			$obj = array();
 			for ($i = 0, $l = sizeof($p); $i < $l; ++$i) {
@@ -118,9 +124,11 @@ class Imager {
 				$obj[$b[0]] = $b[1];
 			}
 			$src=$obj['src'];
+
 			$ext=Path::getExt($src);
+
 			if ($ext=='php') {
-				return static::getReal($obj['src']);
+				return static::getReal($src);
 			} else {
 				return Path::theme($src);
 			}
