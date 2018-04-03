@@ -47,7 +47,7 @@ class Imager {
 			//$src=Path::theme('-imager/noimage.png');
 			$src = Imager::remote($src);
 		} else {
-			if ($ext=='php' || preg_match('/imager\//', $src)) {
+			if ($ext=='php' || preg_match('/imager\/\?/', $src)) {
 				//Такое может быть если путь до картинки передан тоже с imager то есть двойной вызов
 				$src = Imager::getReal($src);
 				
