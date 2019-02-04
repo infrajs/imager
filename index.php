@@ -8,11 +8,6 @@ use infrajs\router\Router;
 use infrajs\hash\Hash;
 use infrajs\load\Load;
 
-if (!is_file('vendor/autoload.php')) {
-	chdir('../../../');
-	require_once('vendor/autoload.php');
-	Router::init();
-}
 $ans = array();
 
 $isrc = Ans::GET('src');
@@ -35,8 +30,9 @@ if (!$src && $or) $src = Imager::prepareSrc($or, $num); //Путь не найд
 Imager::modified($src);
 
 
-$mark = Ans::GET('mark','bool');
+$mark = Ans::GET('mark','bool'); //depricated
 $w = Ans::GET('w', 'int');
+$m = Ans::GET('m', 'int');
 $h = Ans::GET('h', 'int');
 $top = Ans::GET('top','bool');
 $crop = Ans::GET('crop','bool');
@@ -94,7 +90,7 @@ if ($getorig) {
 }
 
 $gray = isset($_GET['gray']);
-$args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray);
+$args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $m);
 
 $execute = false;
 
@@ -214,6 +210,10 @@ if ($execute) {
 		}
 	}*/
 	//$src с водяной меткой если нужно
+	
+	if ($m) {
+		$src = Imager::mark($src, $type, $cachesrc);
+	}
 	if ($gray) {
 		$src = Imager::makeGray($src, $temp);//новый src уже на серую картинку
 	}

@@ -2,6 +2,7 @@
 namespace infrajs\imager;
 use infrajs\once\Once;
 use infrajs\path\Path;
+use infrajs\config\Config;
 
 class Imager {
 	public static $conf = array(
@@ -359,6 +360,44 @@ class Imager {
 
 		return $data;
 	}
+	public static function mark($src, $type, $cachesrc) {
+		$cachesrc = $cachesrc.'.mark';
+		//if (is_file($cachesrc)) return $cachesrc;
+		
+		$conf = Config::get();
+		list($w, $h) = getimagesize($src);
+		if (!$h) return $src;
+
+
+		if (!$conf['imager']['watermark']) return $src;
+		if ($type == 'gif') return $src; //Проблема прозрачности
+
+		$water = Path::theme('-imager/mark.png');
+		if (!$water)  return $src;
+		
+		$fn = 'imagecreatefrom'.$type;
+		$img = $fn($src);
+		
+		$w = $w * 9 / 10;
+		$h = $h * 9 / 10;
+
+		$water = Imager::scale($water, $w, $h); //Водяной знак должен уместиться на 90% ширины
+
+		file_put_contents($cachesrc, $water);
+		$water = imagecreatefrompng($cachesrc);
+
+		$img = create_watermark($type, $img, $water, 100);//$img - картинка с водяным знаком
+		
+		$fn = 'image'.$type;
+		$quality = static::$conf['jpegquality'];
+		if ($type == 'png') $quality = 9;
+		
+		$fn($img, $cachesrc, $quality);
+
+		imagedestroy($img);
+		
+		return $cachesrc;
+	}
 }
 Imager::$conf["cache"] = Path::$conf['cache'].'imager/';
 
@@ -673,7 +712,7 @@ function &imager_makeInfo($src)
 
 	return;
 }
-
+*/
 # given two images, return a blended watermarked image
 function create_watermark($type, $main_img_obj, $watermark_img_obj, $alpha_level = 100)
 {
@@ -770,6 +809,3 @@ function imager_setTransparency($new_iamge, $image_source)
 	imagefill($new_image, 0, 0, $transparencyIndex);
 	imagecolortransparent($new_image, $transparencyIndex);
 }
-
-
-*/
