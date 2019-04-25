@@ -144,7 +144,7 @@ class Imager {
 	}
 	public static function getType($src)
 	{
-		return Once::exec(__FILE__.'getTpype', function ($src) {
+		return Once::func(function ($src) {
 			$src = Path::tofs($src);
 			$handle = fopen($src, 'r');
 			$line = fgets($handle, 50);
@@ -152,6 +152,9 @@ class Imager {
 			fclose($handle);
 			if (preg_match('/JFIF/', $line)) {
 				return 'jpeg';
+			}
+			if (preg_match('/<\?xml/', $line)) {
+				return 'svg+xml';
 			}
 			if (preg_match('/PNG/', $line)) {
 				return 'png';
