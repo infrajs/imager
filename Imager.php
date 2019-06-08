@@ -5,13 +5,7 @@ use infrajs\path\Path;
 use infrajs\config\Config;
 
 class Imager {
-	public static $conf = array(
-		"jpegquality" => 77,
-		"remotecachehour" => 4,
-		"optipng" => false,
-		"watermark" => false,
-		'waterlim' => 22500
-	);
+	public static $conf = array();
 	public static $exts = array("jpeg", "jpg", "png", "gif");
 	public static function modified($src) { 
 		$conf=static::$conf;
