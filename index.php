@@ -21,7 +21,8 @@ Nostore::pubStat();//Если кэширование разрешено сдел
 
 if (is_null($isrc)) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
-$src = Imager::prepareSrc($isrc, $num);
+$name = Ans::GET('name');
+$src = Imager::prepareSrc($isrc, $num, $name);
 
 $or = Ans::GET('or'); //Путь на случай если src не найден
 

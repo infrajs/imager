@@ -2,6 +2,7 @@
 namespace infrajs\imager;
 use infrajs\once\Once;
 use infrajs\path\Path;
+use infrajs\load\Load;
 use infrajs\config\Config;
 
 class Imager {
@@ -33,7 +34,7 @@ class Imager {
 		header('Last-Modified: '.$last_modified);
 	}
 	
-	public static function prepareSrc($src, $num = 0)
+	public static function prepareSrc($src, $num = 0, $name = false)
 	{
 		$conf=static::$conf;
 		$ext=Path::getExt($src);
@@ -58,17 +59,29 @@ class Imager {
 			array_map(function ($file) use (&$list, $src) {
 				if ($file{0} == '.') return;
 				if (!is_file($src.$file)) return;
-				$ext=Path::getExt($file);
-				if (in_array($ext, Imager::$exts)) $list[] = $file;
+				$fdata = Load::pathinfo($file);
+
+				if (in_array($fdata['ext'], Imager::$exts)) $list[] = ['file'=>$file,'name' => $fdata['name']];
 			}, scandir($src));
-			if (empty($list[$num])) {
-				$src = false;
+			$nsrc = false;
+			if ($name) {
+				foreach ($list as $f) {
+					if ($f['name'] == $name) {
+						$nsrc = $src.$f['file'];
+						break;
+					}
+				}
 			} else {
-				$src = $src.$list[$num];
+				if (!empty($list[$num])) {
+					$nsrc = $src.$list[$num]['file'];
+				}
 			}
+			
+		} else {
+			$nsrc = $src;
 		}
 
-		return $src;
+		return $nsrc;
 	}
 	
 	public static function remote($src)
