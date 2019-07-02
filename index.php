@@ -25,12 +25,6 @@ $name = Ans::GET('name');
 $src = Imager::prepareSrc($isrc, $num, $name);
 
 $or = Ans::GET('or'); //Путь на случай если src не найден
-
-if (!$src && $or) $src = Imager::prepareSrc($or, $num); //Путь не найден смотрим or
-
-Imager::modified($src);
-
-
 $mark = Ans::GET('mark','bool'); //depricated
 $w = Ans::GET('w', 'int');
 $m = Ans::GET('m', 'int');
@@ -40,6 +34,16 @@ $crop = Ans::GET('crop','bool');
 $ignoremark = Ans::GET('ignoremark','bool', null); //1 - Навсегда убирает водяной знак с картинки и больше водяной знак добавляться на неё не будет. 0 отменяет этот запрет.
 
 $getorig = Ans::GET('getorig','bool'); //Показывает оригинальную картинку без изменения размеров, как есть... без водяного знака
+
+if (!$src && $or) {
+	$m = 0;
+	$src = Imager::prepareSrc($or, $num); //Путь не найден смотрим or
+}
+
+Imager::modified($src);
+
+
+
 
 $conf=Imager::$conf;
 
