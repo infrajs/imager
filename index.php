@@ -123,7 +123,7 @@ if ($execute) {
 		*/
 		
 		$default = true;
-		$src = Imager::noImage('-imager/noimage.png');
+		$src = Imager::noImage();
 	}
 	$src = Imager::tofs($src);
 	$type = Imager::getType($src);
