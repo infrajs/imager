@@ -108,7 +108,7 @@ class Imager {
 	}
 	public static function noImage(){
 		$conf=static::$conf;
-		return Path::theme('-imager/noimage.png');
+		return Path::theme('-imager/noimage.jpg');
 	}
 	public static function getReal($src)
 	{
