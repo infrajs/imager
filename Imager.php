@@ -57,7 +57,7 @@ class Imager {
 			$list = array();
 			
 			array_map(function ($file) use (&$list, $src) {
-				if ($file{0} == '.') return;
+				if ($file[0] == '.') return;
 				if (!is_file($src.$file)) return;
 				$fdata = Load::pathinfo($file);
 
