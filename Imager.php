@@ -157,6 +157,9 @@ class Imager {
 			$line = fgets($handle, 50);
 			$line2 = fgets($handle, 50);
 			fclose($handle);
+			if (preg_match('/WEBP/', $line)) {
+				return 'webp';
+			}
 			if (preg_match('/JFIF/', $line)) {
 				return 'jpeg';
 			}

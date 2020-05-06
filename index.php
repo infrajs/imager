@@ -243,7 +243,7 @@ if ($execute) {
 	}
 
 	if (!$type) {
-		$type = 'image/jpeg';
+		$type = 'jpeg';
 	}
 	
 	$ans = array('name' => $name, 'type' => $type);
