@@ -99,7 +99,7 @@ $args = array($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top,
 
 $execute = false;
 
-$cachesrc = Imager::$conf['cache'].'resize/'.Hash::make($args);
+$cachesrc = Imager::$conf['cache'].'resize/'.md5($args);
 
 if (is_file($cachesrc)) $cachetime = filemtime($cachesrc);
 else $cachetime = 0;
