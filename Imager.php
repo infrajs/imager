@@ -4,12 +4,13 @@ use infrajs\once\Once;
 use infrajs\path\Path;
 use infrajs\load\Load;
 use infrajs\config\Config;
+use infrajs\nostore\Modified;
 
 class Imager {
 	public static $conf = array();
 	public static $exts = array("jpeg", "jpg", "png", "gif");
 	public static function modified($src) { 
-		$conf=static::$conf;
+		$conf = static::$conf;
 		/*---------$src---------------*/
 		if (preg_match('/\.php$/', $src)) return;
 		if (preg_match('/\.php\?/', $src)) return;
@@ -17,21 +18,9 @@ class Imager {
 		//Нельзя считывать напрямую такое
 		$tsrc = Path::theme($src);
 		if (!$tsrc) return;
-		$date = filemtime($tsrc);//даже если это папка
-		$last_modified = gmdate('D, d M Y H:i:s', $date).' GMT';
-		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
-			// разобрать заголовок
-			$if_modified_since = preg_replace('/;.*$/', '', $_SERVER['HTTP_IF_MODIFIED_SINCE']);
+		$time = filemtime($tsrc);//даже если это папка
 
-			if ($if_modified_since == $last_modified) {
-				// кэш браузера до сих пор актуален
-				header('HTTP/1.0 304 Not Modified');
-				//header('Cache-Control: max-age=8640000, must-revalidate');
-				exit;
-			}
-		}
-		//header('Cache-Control: max-age=86400, must-revalidate');
-		header('Last-Modified: '.$last_modified);
+		Modified::time($time);
 	}
 	
 	public static function prepareSrc($src, $num = 0, $name = false)

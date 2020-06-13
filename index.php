@@ -3,7 +3,6 @@ namespace infrajs\imager;
 use infrajs\ans\Ans;
 use infrajs\path\Path;
 use infrajs\cache\Cache;
-use infrajs\nostore\Nostore;
 use infrajs\router\Router;
 use infrajs\hash\Hash;
 use infrajs\load\Load;
@@ -16,8 +15,6 @@ if (preg_match('/^\//',$isrc)) $isrc = preg_replace('/^\//','',$isrc);
 $num = Ans::GET('num', 'int', 0);
 $re = isset($_GET['re']);
 $psrc = Path::pretty($isrc);
-
-Nostore::pubStat();//Если кэширование разрешено сделает его долгим как для статики
 
 if (is_null($isrc)) return Ans::err($ans,'?src= to the image required. Relative to the siteroot. For example vendor/infrajs/imager/?src=vendor/infrajs/imager/test.jpg');
 
