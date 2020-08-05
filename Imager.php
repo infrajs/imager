@@ -1,15 +1,18 @@
 <?php
+
 namespace infrajs\imager;
-use infrajs\once\Once;
+
 use infrajs\path\Path;
 use infrajs\load\Load;
 use infrajs\config\Config;
 use infrajs\nostore\Modified;
 
-class Imager {
+class Imager
+{
 	public static $conf = array();
 	public static $exts = array("jpeg", "jpg", "png", "gif");
-	public static function modified($src) { 
+	public static function modified($src)
+	{
 		$conf = static::$conf;
 		/*---------$src---------------*/
 		if (preg_match('/\.php$/', $src)) return;
@@ -18,24 +21,23 @@ class Imager {
 		//Нельзя считывать напрямую такое
 		$tsrc = Path::theme($src);
 		if (!$tsrc) return;
-		$time = filemtime($tsrc);//даже если это папка
+		$time = filemtime($tsrc); //даже если это папка
 
 		Modified::time($time);
 	}
-	
+
 	public static function prepareSrc($src, $num = 0, $name = false)
 	{
-		$conf=static::$conf;
-		$ext=Path::getExt($src);
+		$conf = static::$conf;
+		$ext = Path::getExt($src);
 
 		if (preg_match("/^https{0,1}:\/\//", $src)) {
 			//$src=Path::theme('-imager/noimage.png');
 			$src = Imager::remote($src);
 		} else {
-			if ($ext=='php' || preg_match('/imager\/\?/', $src)) {
+			if ($ext == 'php' || preg_match('/imager\/\?/', $src)) {
 				//Такое может быть если путь до картинки передан тоже с imager то есть двойной вызов
 				$src = Imager::getReal($src);
-				
 			} else {
 				$src = Path::theme($src);
 			}
@@ -44,44 +46,43 @@ class Imager {
 		if ($src && is_dir($src)) {
 			//папка смотрим в ней для src
 			$list = array();
-			
+
 			array_map(function ($file) use (&$list, $src) {
 				if ($file[0] == '.') return;
-				if (!is_file($src.$file)) return;
+				if (!is_file($src . $file)) return;
 				$fdata = Load::pathinfo($file);
 
-				if (in_array($fdata['ext'], Imager::$exts)) $list[] = ['file'=>$file,'name' => $fdata['name']];
+				if (in_array($fdata['ext'], Imager::$exts)) $list[] = ['file' => $file, 'name' => $fdata['name']];
 			}, scandir($src));
 			$nsrc = false;
 			if ($name) {
 				foreach ($list as $f) {
 					if ($f['name'] == $name) {
-						$nsrc = $src.$f['file'];
+						$nsrc = $src . $f['file'];
 						break;
 					}
 				}
 			} else {
 				if (!empty($list[$num])) {
-					$nsrc = $src.$list[$num]['file'];
+					$nsrc = $src . $list[$num]['file'];
 				}
 			}
-			
 		} else {
 			$nsrc = $src;
 		}
 
 		return $nsrc;
 	}
-	
+
 	public static function remote($src)
 	{
-		$conf=static::$conf;
-		$t=$conf['remotecachehour'];
-		$dir = $conf['cache'].'remote/';
+		$conf = static::$conf;
+		$t = $conf['remotecachehour'];
+		$dir = $conf['cache'] . 'remote/';
 		$dir = Path::theme($dir);
-		if (!$dir) die('Not Found '.$conf['cache'].'remote/');
+		if (!$dir) die('Not Found ' . $conf['cache'] . 'remote/');
 
-		$esrc = $dir.Path::encode($src);
+		$esrc = $dir . Path::encode($src);
 		$remotecache = Path::theme($esrc);
 		if ($remotecache && !isset($_GET['re'])) {
 			$cachetime = filemtime($remotecache);
@@ -95,14 +96,15 @@ class Imager {
 
 		return $esrc;
 	}
-	public static function noImage(){
-		$conf=static::$conf;
+	public static function noImage()
+	{
+		$conf = static::$conf;
 		return Path::theme('-imager/noimage.jpg');
 	}
 	public static function getReal($src)
 	{
 		//php
-		$conf=static::$conf;
+		$conf = static::$conf;
 		$p = explode('?', $src, 2);
 		$path = $p[0];
 		$query = $p[1];
@@ -113,18 +115,18 @@ class Imager {
 		if (!$path) {
 			return static::getReal($query);
 		} elseif (preg_match("/imager\//", $path)) {
-			
+
 			$p = explode('&', $query);
 			$obj = array();
 			for ($i = 0, $l = sizeof($p); $i < $l; ++$i) {
 				$b = explode('=', $p[$i], 2);
 				$obj[$b[0]] = $b[1];
 			}
-			$src=$obj['src'];
+			$src = $obj['src'];
 
-			$ext=Path::getExt($src);
+			$ext = Path::getExt($src);
 
-			if ($ext=='php') {
+			if ($ext == 'php') {
 				return static::getReal($src);
 			} else {
 				return Path::theme($src);
@@ -132,15 +134,21 @@ class Imager {
 		}
 	}
 
-	public static function toutf($src) {
+	public static function toutf($src)
+	{
 		return $src;
 	}
-	public static function tofs($src) {
+	public static function tofs($src)
+	{
 		return $src;
 	}
+	public static $once = [];
 	public static function getType($src)
 	{
-		return Once::func(function ($src) {
+		$key = 'getType:' . $src;
+		if (isset(Imager::$once[$key])) return Imager::$once[$key];
+
+		$fn = function ($src) {
 			$src = Path::tofs($src);
 			$handle = fopen($src, 'r');
 			$line = fgets($handle, 50);
@@ -171,7 +179,9 @@ class Imager {
 				return 'wbmp';
 			}
 			return false;
-		}, array($src));
+		};
+
+		return Imager::$once[$key] = $fn($src);
 	}
 	public static function makeGray($img_path, &$temp = false)
 	{
@@ -239,21 +249,22 @@ class Imager {
 
 		return $output_path;
 	}
-	public static function optipng($data, $id){
+	public static function optipng($data, $id)
+	{
 		if (!Imager::$conf['optipng']) return $data;
-		$src = Path::resolve(Imager::$conf['cache']).'opti.'.$id.'.png';
+		$src = Path::resolve(Imager::$conf['cache']) . 'opti.' . $id . '.png';
 		file_put_contents($src, $data);
-		if (Imager::$conf['optipng'] === true) $o=2;
-		else $o=(int)Imager::$conf['optipng'];
+		if (Imager::$conf['optipng'] === true) $o = 2;
+		else $o = (int)Imager::$conf['optipng'];
 
-		exec('optipng '.$src.' -o'.$o.' -out '.$src.'.res.png');
-		$data = file_get_contents($src.'.res.png');
-		unlink($src.'.res.png');
+		exec('optipng ' . $src . ' -o' . $o . ' -out ' . $src . '.res.png');
+		$data = file_get_contents($src . '.res.png');
+		unlink($src . '.res.png');
 		return $data;
 	}
 	public static function scale($src, $w, $h, $crop = false, $top = false, $bottom = false)
 	{
-		
+
 		$type = static::getType($src);
 		if (!$type || (!$w && !$h)) {
 			return file_get_contents($src);
@@ -277,15 +288,15 @@ class Imager {
 		if ($w && $h) {
 			$k = $w / $h;
 			$k_orig = $width_orig / $height_orig;
-			if ($k_orig == $k) {//Не важно.. что уменьшаем пропорции останутся одинаковыми
+			if ($k_orig == $k) { //Не важно.. что уменьшаем пропорции останутся одинаковыми
 			} elseif ($k_orig > $k) {
 				//ширины в оригинале больше чем в требуемом.. с учётом размеров высоты.
 				if (!$crop) {
 					//Значит чтобы ничего не обрезать и быть в рамках меняем ширину а высота и так относительно меньше требуемой
-					$h = false;//Значит высоту нужно высчитать отностительно ширины
+					$h = false; //Значит высоту нужно высчитать отностительно ширины
 				} else {
 					//Ну а если нужно чтобы указанные размеры были полностью заполнены то ширину надо обрезать и равняться будем уже на высоту
-					$d = $h / $height_orig;//Коэфициент на сколько изменяем оригинальный размер
+					$d = $h / $height_orig; //Коэфициент на сколько изменяем оригинальный размер
 					$dw = (($width_orig * $d - $w)) / $d;
 				}
 			} else {
@@ -294,7 +305,7 @@ class Imager {
 					$w = false;
 				} else {
 					//Ну а если обрезать, то высоту/ Ровняемся на ширину
-					$d = $w / $width_orig;//Коэфициент на сколько изменяем оригинальный размер
+					$d = $w / $width_orig; //Коэфициент на сколько изменяем оригинальный размер
 					$dh = (($height_orig * $d - $h)) / $d;
 				}
 			}
@@ -309,12 +320,12 @@ class Imager {
 		$c = ($crop && ($dh || $dw)) ? ' crop' : '';
 		$t = ($top && $c) ? ' top' : '';
 		$b = ($bottom && $c) ? ' bottom' : '';
-		
-		$conf=static::$conf;
+
+		$conf = static::$conf;
 
 		$image_p = imagecreatetruecolor($w, $h);
 
-		$fn = 'imagecreatefrom'.$type;
+		$fn = 'imagecreatefrom' . $type;
 		$image = $fn($src);
 
 		//image_p пустая картинка но нужных размеров
@@ -345,10 +356,10 @@ class Imager {
 		}
 
 		imagecopyresampled($image_p, $image, 0, 0, $dw / 2, $fromtop, $w, $h, $width_orig - $dw, $height_orig - $dh);
-		$fn = 'image'.$type;
+		$fn = 'image' . $type;
 
 		$quality = static::$conf['jpegquality'];
-		
+
 		if ($type == 'png') {
 			$quality = 9;
 		}
@@ -362,10 +373,11 @@ class Imager {
 
 		return $data;
 	}
-	public static function mark($src, $type, $cachesrc) {
-		$cachesrc = $cachesrc.'.mark';
+	public static function mark($src, $type, $cachesrc)
+	{
+		$cachesrc = $cachesrc . '.mark';
 		//if (is_file($cachesrc)) return $cachesrc;
-		
+
 		$conf = Config::get();
 		list($w, $h) = getimagesize($src);
 		if (!$h) return $src;
@@ -376,10 +388,10 @@ class Imager {
 
 		$water = Path::theme('-imager/mark.png');
 		if (!$water)  return $src;
-		
-		$fn = 'imagecreatefrom'.$type;
+
+		$fn = 'imagecreatefrom' . $type;
 		$img = $fn($src);
-		
+
 		$w = $w * 9 / 10;
 		$h = $h * 9 / 10;
 
@@ -388,20 +400,20 @@ class Imager {
 		file_put_contents($cachesrc, $water);
 		$water = imagecreatefrompng($cachesrc);
 
-		$img = create_watermark($type, $img, $water, 100);//$img - картинка с водяным знаком
-		
-		$fn = 'image'.$type;
+		$img = create_watermark($type, $img, $water, 100); //$img - картинка с водяным знаком
+
+		$fn = 'image' . $type;
 		$quality = static::$conf['jpegquality'];
 		if ($type == 'png') $quality = 9;
-		
+
 		$fn($img, $cachesrc, $quality);
 
 		imagedestroy($img);
-		
+
 		return $cachesrc;
 	}
 }
-Imager::$conf["cache"] = Path::$conf['cache'].'imager/';
+Imager::$conf["cache"] = Path::$conf['cache'] . 'imager/';
 
 
 
@@ -411,63 +423,63 @@ Imager::$conf["cache"] = Path::$conf['cache'].'imager/';
 function infra_imager_browser($agent = false)
 {
 	if (!$agent) $agent = $_SERVER['HTTP_USER_AGENT'];
+	
+	$key = 'browser:' . $agent;
+	if (isset(Imager::$once[$key])) return Imager::$once[$key];
 
 	$agent = mb_strtolower($agent);
-	$name = Once::exec('infra_imager_browser', function ($agent) {
-		if (preg_match('/msie (\d)/', $agent, $matches)) {
-			$name = 'ie ie'.$matches[1];
-		} elseif (preg_match('/opera/', $agent)) {
-			$name = 'opera';
-			if (preg_match('/opera\/9/', $agent)) {
-				$name .= ' opera9';
-			} elseif (preg_match('/opera (\d)/', $agent, $matches)) {
-				$name .= ' opera'.$mathces[1];
+	
+	if (preg_match('/msie (\d)/', $agent, $matches)) {
+		$name = 'ie ie' . $matches[1];
+	} elseif (preg_match('/opera/', $agent)) {
+		$name = 'opera';
+		if (preg_match('/opera\/9/', $agent)) {
+			$name .= ' opera9';
+		} elseif (preg_match('/opera (\d)/', $agent, $matches)) {
+			$name .= ' opera' . $mathces[1];
+		}
+		if (preg_match('/opera\smini/', $agent)) {
+			$name .= ' opera_mini';
+		}
+	} elseif (preg_match('/gecko\//', $agent)) {
+		$name = 'gecko';
+		if (preg_match('/firefox/', $agent)) {
+			$name .= ' ff';
+			if (preg_match('/firefox\/2/', $agent)) {
+				$name .= ' ff2';
+			} elseif (preg_match('/firefox\/3/', $agent)) {
+				$name .= ' ff3';
 			}
-			if (preg_match('/opera\smini/', $agent)) {
-				$name .= ' opera_mini';
-			}
-		} elseif (preg_match('/gecko\//', $agent)) {
-			$name = 'gecko';
-			if (preg_match('/firefox/', $agent)) {
-				$name .= ' ff';
-				if (preg_match('/firefox\/2/', $agent)) {
-					$name .= ' ff2';
-				} elseif (preg_match('/firefox\/3/', $agent)) {
-					$name .= ' ff3';
-				}
-			}
-		} elseif (preg_match('/webkit/', $agent)) {
-			$name = 'webkit';
-			if (preg_match('/chrome/', $agent)) {
-				$name .= ' chrome';
-			} else {
-				$name .= ' safari';
-			}
-		} elseif (preg_match('/konqueror/', $agent)) {
-			$name = 'konqueror';
-		} elseif (preg_match('/flock/', $agent)) {
-			$name = 'flock';
+		}
+	} elseif (preg_match('/webkit/', $agent)) {
+		$name = 'webkit';
+		if (preg_match('/chrome/', $agent)) {
+			$name .= ' chrome';
 		} else {
-			$name = 'stranger';
+			$name .= ' safari';
 		}
-		if (!preg_match('/ie/', $name)) {
-			$name .= ' noie';
-		}
-		if (preg_match('/linux|x11/', $agent)) {
-			$name .= ' linux';
-		} elseif (preg_match('/macintosh|mac os x/', $agent)) {
-			$name .= ' mac';
-		} elseif (preg_match('/windows|win32/', $agent)) {
-			$name .= ' win';
-		}
-		if (preg_match('/stranger/', $name)) {
-			$name = '';
-		}
+	} elseif (preg_match('/konqueror/', $agent)) {
+		$name = 'konqueror';
+	} elseif (preg_match('/flock/', $agent)) {
+		$name = 'flock';
+	} else {
+		$name = 'stranger';
+	}
+	if (!preg_match('/ie/', $name)) {
+		$name .= ' noie';
+	}
+	if (preg_match('/linux|x11/', $agent)) {
+		$name .= ' linux';
+	} elseif (preg_match('/macintosh|mac os x/', $agent)) {
+		$name .= ' mac';
+	} elseif (preg_match('/windows|win32/', $agent)) {
+		$name .= ' win';
+	}
+	if (preg_match('/stranger/', $name)) {
+		$name = '';
+	}
 
-		return $name;
-	}, array($agent));
-
-	return $name;
+	return Imager::$once[$key] = $name;
 }
 
 
@@ -499,7 +511,10 @@ function infra_imager_browser($agent = false)
 
 function &imager_readInfo($src)
 {
-	return Once::exec('imager_readInfo', '_imager_readInfo', array($src));
+	$key = 'readInfo:' . $src;
+	if (isset(Imager::$once[$key])) return Imager::$once[$key];
+	return Imager::$once[$key] = _imager_readInfo($src);
+	//return Once::exec('imager_readInfo', '_imager_readInfo', array($src));
 }
 function &_imager_readInfo($src)
 {
@@ -609,9 +624,11 @@ function imager_writeinfo($src, $data)
 		}
 	}
 	$l = sizeof($file);
-	$file[] = "\n".'imager';
-	$file[] = "\n".$json;
-	Once::exec('imager_readInfo', $data, array($src));
+	$file[] = "\n" . 'imager';
+	$file[] = "\n" . $json;
+	
+	$key = 'readInfo:' . $src;
+	Imager::$once[$key] = $data;
 
 	return file_put_contents($src, implode('', $file));
 }
@@ -629,12 +646,12 @@ function &imager_makeInfo($src)
 	Path::mkdir($dir);
 
 	$i = '';
-	$orig = $dir.Path::encode($src);
+	$orig = $dir . Path::encode($src);
 	while (is_file($orig)) {
-		$orig = $orig.$i;
+		$orig = $orig . $i;
 		$i .= 'i';
 	}
-	$r = copy($src, $orig);//по адресу orig не существует файла было проверено
+	$r = copy($src, $orig); //по адресу orig не существует файла было проверено
 	if (!$r) {
 		die('Не удалось сохранить оригинал');
 	}
@@ -749,8 +766,10 @@ function create_watermark($type, $main_img_obj, $watermark_img_obj, $alpha_level
 
 			# if our watermark has a non-transparent value at this pixel intersection
 			# and we're still within the bounds of the watermark image
-			if ($watermark_x >= 0 && $watermark_x < $watermark_img_obj_w &&
-						$watermark_y >= 0 && $watermark_y < $watermark_img_obj_h) {
+			if (
+				$watermark_x >= 0 && $watermark_x < $watermark_img_obj_w &&
+				$watermark_y >= 0 && $watermark_y < $watermark_img_obj_h
+			) {
 				$watermark_rbg = imagecolorsforindex($watermark_img_obj, imagecolorat($watermark_img_obj, $watermark_x, $watermark_y));
 
 				# using image alpha, and user specified alpha, calculate average
@@ -765,7 +784,7 @@ function create_watermark($type, $main_img_obj, $watermark_img_obj, $alpha_level
 				# calculate a color index value using the average RGB values we've determined
 				$return_color = _get_image_color($return_img, $avg_red, $avg_green, $avg_blue);
 
-			# if we're not dealing with an average color here, then let's just copy over the main color
+				# if we're not dealing with an average color here, then let's just copy over the main color
 			} else {
 				$return_color = imagecolorat($main_img_obj, $x, $y);
 			} # END if watermark

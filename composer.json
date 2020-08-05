@@ -4,7 +4,6 @@
 	"description": "Crop and resize images dynamicly in src",
 	"require": {
 		"infrajs/access":"~1",
-		"infrajs/once":"~1",
 		"infrajs/mem":"~1",
 		"infrajs/router":"~1",
 		"infrajs/ans":"~1",
