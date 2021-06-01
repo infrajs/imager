@@ -178,6 +178,10 @@ class Imager
 			if (preg_match('/BM/', $line)) {
 				return 'wbmp';
 			}
+			$line = Path::toutf($line);
+			if (preg_match('/яШяо/', $line)) {
+				return 'jpeg';
+			}
 			return false;
 		};
 
@@ -365,7 +369,8 @@ class Imager
 		}
 
 		ob_start();
-		$fn($image_p, null, $quality);
+		if ($fn === 'imagegif') $fn($image_p, null);
+		else $fn($image_p, null, $quality);
 		$data = ob_get_contents();
 		ob_end_clean();
 		imagedestroy($image);

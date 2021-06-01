@@ -111,7 +111,7 @@ if (!$execute) {
 }
 if ($execute) {
 //$data = Cache::exec(array($isrc), __FILE__, function ($src, $ignoremark, $mark, $default, $getorig, $w, $h, $crop, $top, $gray, $re) use ($isrc) {
-	
+
 	$ext = Path::getExt($src);
 	if (in_array($ext, array('docx','mht'))) {
 		die("docx, mht TODO");
@@ -124,7 +124,7 @@ if ($execute) {
 	}
 	$src = Imager::tofs($src);
 	$type = Imager::getType($src);
-
+	
 	/*
 	if (!is_null($ignoremark)) {
 		//Метку ignore может выставить только администратор
